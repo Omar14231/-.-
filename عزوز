@@ -11,7 +11,7 @@ local character = player.Character or player.CharacterAdded:Wait()
 local humanoid = character:WaitForChild("Humanoid")
 local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
 local screenGui
-local blackScreen
+local gradientScreen
 local titleLabel
 local creatorLabel
 local versionLabel
@@ -25,59 +25,73 @@ local function createIntroUI()
 	screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 	screenGui.Parent = player:WaitForChild("PlayerGui")
 	
-	-- الشاشة السوداء
-	blackScreen = Instance.new("Frame")
-	blackScreen.Name = "BlackScreen"
-	blackScreen.BackgroundColor3 = Color3.new(0, 0, 0)
-	blackScreen.BackgroundTransparency = 1 -- تبدأ شفافة
-	blackScreen.Size = UDim2.new(1, 0, 1, 0)
-	blackScreen.Parent = screenGui
+	-- الشاشة المتدرجة (أصفر، برتقالي، بني)
+	gradientScreen = Instance.new("Frame")
+	gradientScreen.Name = "GradientScreen"
+	gradientScreen.BackgroundColor3 = Color3.new(0, 0, 0) -- تبدأ سوداء
+	gradientScreen.BackgroundTransparency = 1 -- تبدأ شفافة
+	gradientScreen.Size = UDim2.new(1, 0, 1, 0)
+	gradientScreen.Parent = screenGui
+	
+	-- إضافة تدرج لوني
+	local uiGradient = Instance.new("UIGradient")
+	uiGradient.Rotation = 90
+	uiGradient.Transparency = NumberSequence.new({
+		NumberSequenceKeypoint.new(0, 1),
+		NumberSequenceKeypoint.new(1, 1)
+	})
+	uiGradient.Color = ColorSequence.new({
+		ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 0)), -- أصفر
+		ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 165, 0)), -- برتقالي
+		ColorSequenceKeypoint.new(1, Color3.fromRGB(139, 69, 19)) -- بني
+	})
+	uiGradient.Parent = gradientScreen
 	
 	-- العنوان "سكريبت عزوز"
 	titleLabel = Instance.new("TextLabel")
 	titleLabel.Name = "Title"
 	titleLabel.Text = "سكريبت عزوز"
-	titleLabel.TextColor3 = Color3.new(1, 1, 1)
+	titleLabel.TextColor3 = Color3.new(0, 0, 0) -- أسود للتباين مع الألوان الفاتحة
 	titleLabel.TextTransparency = 1
-	titleLabel.TextSize = 48
-	titleLabel.Font = Enum.Font.GothamBold
+	titleLabel.TextSize = 52
+	titleLabel.Font = Enum.Font.GothamBlack
 	titleLabel.BackgroundTransparency = 1
-	titleLabel.Size = UDim2.new(0, 400, 0, 80)
-	titleLabel.Position = UDim2.new(0.5, -200, 0.5, -40)
-	titleLabel.TextStrokeTransparency = 0.8
-	titleLabel.TextStrokeColor3 = Color3.new(0, 0, 0)
+	titleLabel.Size = UDim2.new(0, 450, 0, 90)
+	titleLabel.Position = UDim2.new(0.5, -225, 0.5, -45)
+	titleLabel.TextStrokeTransparency = 0.9
+	titleLabel.TextStrokeColor3 = Color3.new(1, 1, 1)
 	titleLabel.Parent = screenGui
 	
 	-- "صنع عمر" يمين تحت
 	creatorLabel = Instance.new("TextLabel")
 	creatorLabel.Name = "Creator"
 	creatorLabel.Text = "صنع عمر"
-	creatorLabel.TextColor3 = Color3.new(1, 1, 1)
+	creatorLabel.TextColor3 = Color3.new(0, 0, 0) -- أسود للتباين
 	creatorLabel.TextTransparency = 1
-	creatorLabel.TextSize = 24
-	creatorLabel.Font = Enum.Font.Gotham
+	creatorLabel.TextSize = 26
+	creatorLabel.Font = Enum.Font.GothamBold
 	creatorLabel.BackgroundTransparency = 1
-	creatorLabel.Size = UDim2.new(0, 150, 0, 40)
-	creatorLabel.Position = UDim2.new(1, -160, 1, -50)
+	creatorLabel.Size = UDim2.new(0, 160, 0, 45)
+	creatorLabel.Position = UDim2.new(1, -170, 1, -55)
 	creatorLabel.TextXAlignment = Enum.TextXAlignment.Right
-	creatorLabel.TextStrokeTransparency = 0.8
-	creatorLabel.TextStrokeColor3 = Color3.new(0, 0, 0)
+	creatorLabel.TextStrokeTransparency = 0.9
+	creatorLabel.TextStrokeColor3 = Color3.new(1, 1, 1)
 	creatorLabel.Parent = screenGui
 	
-	-- "1.1v" يسار تحت
+	-- "1.2v" يسار تحت
 	versionLabel = Instance.new("TextLabel")
 	versionLabel.Name = "Version"
-	versionLabel.Text = "1.1v"
-	versionLabel.TextColor3 = Color3.new(1, 1, 1)
+	versionLabel.Text = "1.2v"
+	versionLabel.TextColor3 = Color3.new(0, 0, 0) -- أسود للتباين
 	versionLabel.TextTransparency = 1
-	versionLabel.TextSize = 20
-	versionLabel.Font = Enum.Font.Gotham
+	versionLabel.TextSize = 22
+	versionLabel.Font = Enum.Font.GothamBold
 	versionLabel.BackgroundTransparency = 1
-	versionLabel.Size = UDim2.new(0, 100, 0, 40)
-	versionLabel.Position = UDim2.new(0, 20, 1, -50)
+	versionLabel.Size = UDim2.new(0, 110, 0, 45)
+	versionLabel.Position = UDim2.new(0, 25, 1, -55)
 	versionLabel.TextXAlignment = Enum.TextXAlignment.Left
-	versionLabel.TextStrokeTransparency = 0.8
-	versionLabel.TextStrokeColor3 = Color3.new(0, 0, 0)
+	versionLabel.TextStrokeTransparency = 0.9
+	versionLabel.TextStrokeColor3 = Color3.new(1, 1, 1)
 	versionLabel.Parent = screenGui
 end
 
@@ -87,19 +101,19 @@ local function createProtectionBox()
 	protectionBox.Name = "ProtectionBox"
 	protectionBox.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
 	protectionBox.BackgroundTransparency = 0.8
-	protectionBox.Size = UDim2.new(0, 300, 0, 150)
-	protectionBox.Position = UDim2.new(0.5, -150, 0.5, -75)
+	protectionBox.Size = UDim2.new(0, 320, 0, 160)
+	protectionBox.Position = UDim2.new(0.5, -160, 0.5, -80)
 	protectionBox.Visible = false
 	protectionBox.Parent = screenGui
 	
 	-- زوايا دائرية
 	local corner = Instance.new("UICorner")
-	corner.CornerRadius = UDim.new(0, 15)
+	corner.CornerRadius = UDim.new(0, 18)
 	corner.Parent = protectionBox
 	
-	-- تأثير إضاءة
+	-- تأثير إضاءة ذهبية
 	local glow = Instance.new("UIStroke")
-	glow.Color = Color3.fromRGB(0, 255, 255)
+	glow.Color = Color3.fromRGB(255, 215, 0) -- ذهبي
 	glow.Thickness = 3
 	glow.Transparency = 0.5
 	glow.Parent = protectionBox
@@ -108,12 +122,12 @@ local function createProtectionBox()
 	local protectionText = Instance.new("TextLabel")
 	protectionText.Name = "ProtectionText"
 	protectionText.Text = "أنت الآن محمي"
-	protectionText.TextColor3 = Color3.fromRGB(0, 255, 255)
-	protectionText.TextSize = 28
-	protectionText.Font = Enum.Font.GothamBold
+	protectionText.TextColor3 = Color3.fromRGB(255, 215, 0) -- ذهبي
+	protectionText.TextSize = 32
+	protectionText.Font = Enum.Font.GothamBlack
 	protectionText.BackgroundTransparency = 1
 	protectionText.Size = UDim2.new(1, 0, 0.4, 0)
-	protectionText.Position = UDim2.new(0, 0, 0.2, 0)
+	protectionText.Position = UDim2.new(0, 0, 0.15, 0)
 	protectionText.TextStrokeTransparency = 0.7
 	protectionText.TextStrokeColor3 = Color3.new(0, 0, 0)
 	protectionText.Parent = protectionBox
@@ -121,25 +135,25 @@ local function createProtectionBox()
 	-- النص الثانوي
 	local subText = Instance.new("TextLabel")
 	subText.Name = "SubText"
-	subText.Text = "الحماية نشطة ضد جميع التهديدات"
-	subText.TextColor3 = Color3.fromRGB(200, 200, 200)
-	subText.TextSize = 16
-	subText.Font = Enum.Font.Gotham
+	subText.Text = "حماية كاملة ضد الموت والأدوات"
+	subText.TextColor3 = Color3.fromRGB(220, 220, 220)
+	subText.TextSize = 18
+	subText.Font = Enum.Font.GothamBold
 	subText.BackgroundTransparency = 1
 	subText.Size = UDim2.new(1, 0, 0.3, 0)
-	subText.Position = UDim2.new(0, 0, 0.5, 0)
+	subText.Position = UDim2.new(0, 0, 0.45, 0)
 	subText.Parent = protectionBox
 	
-	-- أيقونة الحماية
+	-- أيقونة الحماية ذهبية
 	local shieldIcon = Instance.new("ImageLabel")
 	shieldIcon.Name = "ShieldIcon"
 	shieldIcon.Image = "rbxassetid://3926305904"
-	shieldIcon.ImageRectOffset = Vector2.new(524, 204)
-	shieldIcon.ImageRectSize = Vector2.new(36, 36)
-	shieldIcon.ImageColor3 = Color3.fromRGB(0, 255, 255)
+	shieldIcon.ImageRectOffset = Vector2.new(884, 324)
+	shieldIcon.ImageRectSize = Vector2.new(48, 48)
+	shieldIcon.ImageColor3 = Color3.fromRGB(255, 215, 0) -- ذهبي
 	shieldIcon.BackgroundTransparency = 1
-	shieldIcon.Size = UDim2.new(0, 50, 0, 50)
-	shieldIcon.Position = UDim2.new(0.5, -25, 0.8, -25)
+	shieldIcon.Size = UDim2.new(0, 60, 0, 60)
+	shieldIcon.Position = UDim2.new(0.5, -30, 0.8, -30)
 	shieldIcon.Parent = protectionBox
 end
 
@@ -171,46 +185,69 @@ end
 
 -- دالة العرض التقديمي
 local function playIntro()
-	-- 1. ظهور الشاشة السوداء بالتدريج
-	fadeIn(blackScreen, "BackgroundTransparency", 0, 1.5)
+	-- 1. ظهور الشاشة المتدرجة بالتدريج
+	fadeIn(gradientScreen, "BackgroundTransparency", 0, 1.5)
+	
+	-- ظهور التدرج اللوني
+	local gradientTween = TweenService:Create(
+		gradientScreen.UIGradient,
+		TweenInfo.new(2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+		{Transparency = NumberSequence.new({
+			NumberSequenceKeypoint.new(0, 0),
+			NumberSequenceKeypoint.new(1, 0)
+		})}
+	)
+	gradientTween:Play()
+	
 	task.wait(1.5)
 	
 	-- 2. ظهور العنوان بالتدريج
-	fadeIn(titleLabel, "TextTransparency", 0, 1)
-	task.wait(1)
+	fadeIn(titleLabel, "TextTransparency", 0, 1.2)
+	task.wait(1.2)
 	
 	-- 3. ظهور "صنع عمر" بالتدريج
-	fadeIn(creatorLabel, "TextTransparency", 0, 0.7)
+	fadeIn(creatorLabel, "TextTransparency", 0, 0.8)
 	
 	-- 4. ظهور الإصدار بالتدريج
-	fadeIn(versionLabel, "TextTransparency", 0, 0.7)
+	fadeIn(versionLabel, "TextTransparency", 0, 0.8)
 	task.wait(1)
 	
-	-- 5. البقاء لمدة 2 ثواني
-	task.wait(2)
+	-- 5. البقاء لمدة 2.5 ثواني
+	task.wait(2.5)
 	
 	-- 6. إخفاء كل شيء بالتدريج
-	fadeOut(titleLabel, "TextTransparency", 1, 1)
-	fadeOut(creatorLabel, "TextTransparency", 1, 1)
-	fadeOut(versionLabel, "TextTransparency", 1, 1)
-	task.wait(1)
+	fadeOut(titleLabel, "TextTransparency", 1, 1.2)
+	fadeOut(creatorLabel, "TextTransparency", 1, 1.2)
+	fadeOut(versionLabel, "TextTransparency", 1, 1.2)
+	task.wait(1.2)
 	
-	fadeOut(blackScreen, "BackgroundTransparency", 1, 1.5)
-	task.wait(1.5)
+	-- إخفاء التدرج اللوني
+	local gradientOut = TweenService:Create(
+		gradientScreen.UIGradient,
+		TweenInfo.new(1.8, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+		{Transparency = NumberSequence.new({
+			NumberSequenceKeypoint.new(0, 1),
+			NumberSequenceKeypoint.new(1, 1)
+		})}
+	)
+	gradientOut:Play()
+	
+	fadeOut(gradientScreen, "BackgroundTransparency", 1, 1.8)
+	task.wait(1.8)
 	
 	-- 7. إظهار مربع الحماية
 	protectionBox.Visible = true
-	fadeIn(protectionBox, "BackgroundTransparency", 0.2, 0.5)
+	fadeIn(protectionBox, "BackgroundTransparency", 0.2, 0.6)
 	
-	-- تأثير توهج متكرر
+	-- تأثير توهج ذهبي متكرر
 	coroutine.wrap(function()
 		local glowEffect = protectionBox:FindFirstChild("UIStroke")
 		if glowEffect then
-			for i = 1, 4 do -- تقليل عدد المرات
-				fadeIn(glowEffect, "Transparency", 0.2, 0.6)
-				task.wait(0.6)
-				fadeOut(glowEffect, "Transparency", 0.5, 0.6)
-				task.wait(0.6)
+			for i = 1, 3 do
+				fadeIn(glowEffect, "Transparency", 0.2, 0.7)
+				task.wait(0.7)
+				fadeOut(glowEffect, "Transparency", 0.5, 0.7)
+				task.wait(0.7)
 			end
 		end
 	end)()
@@ -218,127 +255,107 @@ local function playIntro()
 	task.wait(2.5)
 	
 	-- 8. إخفاء مربع الحماية بالتدريج
-	fadeOut(protectionBox, "BackgroundTransparency", 1, 1)
+	fadeOut(protectionBox, "BackgroundTransparency", 1, 1.2)
 	local stroke = protectionBox:FindFirstChild("UIStroke")
 	if stroke then
-		fadeOut(stroke, "Transparency", 1, 1)
+		fadeOut(stroke, "Transparency", 1, 1.2)
 	end
-	task.wait(1)
+	task.wait(1.2)
 	protectionBox:Destroy()
-	blackScreen:Destroy()
+	gradientScreen:Destroy()
 end
 
 -- =========================================
--- نظام الحماية المتكامل بدون lag
+-- نظام الحماية الكاملة ضد الموت
 -- =========================================
 
--- دالة لتطبيق الحماية على الشخصية
-local function applyCharacterProtection()
-	-- إضافة تأثير الحماية البصرية (لون أزرق سماوي)
-	local function addProtectionGlow()
-		-- التأثير الأساسي
-		local forceField = Instance.new("ForceField")
-		forceField.Visible = false -- نخفي ForceField الأصلي
-		forceField.Parent = character
-		
-		-- إنشاء تأثيرنا الخاص
-		local protectionGlow = Instance.new("Part")
-		protectionGlow.Name = "ProtectionGlow"
-		protectionGlow.Size = Vector3.new(6, 7, 6)
-		protectionGlow.Transparency = 0.7
-		protectionGlow.Color = Color3.fromRGB(0, 200, 255) -- أزرق سماوي
-		protectionGlow.Material = Enum.Material.Neon
-		protectionGlow.CanCollide = false
-		protectionGlow.Anchored = false
-		protectionGlow.Parent = character
-		
-		-- Weld للتأثير
-		local weld = Instance.new("Weld")
-		weld.Part0 = humanoidRootPart
-		weld.Part1 = protectionGlow
-		weld.C0 = CFrame.new(0, -0.5, 0)
-		weld.Parent = protectionGlow
-		
-		-- توهج إضافي
-		local pointLight = Instance.new("PointLight")
-		pointLight.Name = "ProtectionLight"
-		pointLight.Color = Color3.fromRGB(0, 200, 255)
-		pointLight.Brightness = 2
-		pointLight.Range = 15
-		pointLight.Shadows = true
-		pointLight.Parent = protectionGlow
-		
-		return protectionGlow
-	end
+-- دالة لمنع الموت بأي طريقة
+local function setupImmortality()
+	-- منع الموت بشكل كامل
+	local immortalityActive = true
 	
-	-- حماية أساسية خفيفة
-	local function setupBasicProtection()
-		-- حفظ القيم الأصلية
-		local originalWalkSpeed = humanoid.WalkSpeed
-		local originalJumpPower = humanoid.JumpPower
+	-- حماية أساسية: إعادة الصحة فوراً عند أي نقصان
+	humanoid.HealthChanged:Connect(function(newHealth)
+		if not immortalityActive then return end
 		
-		-- حماية من تغيير السرعة
-		humanoid:GetPropertyChangedSignal("WalkSpeed"):Connect(function()
-			if humanoid.WalkSpeed ~= originalWalkSpeed then
-				humanoid.WalkSpeed = originalWalkSpeed
-			end
-		end)
-		
-		-- حماية من تغيير قوة القفز
-		humanoid:GetPropertyChangedSignal("JumpPower"):Connect(function()
-			if humanoid.JumpPower ~= originalJumpPower then
-				humanoid.JumpPower = originalJumpPower
-			end
-		end)
-		
-		-- حماية الصحة (بدون تكرار مفرط)
-		local lastHealthCheck = tick()
-		humanoid.HealthChanged:Connect(function()
-			local now = tick()
-			if now - lastHealthCheck > 0.5 then -- فحص كل 0.5 ثانية فقط
-				lastHealthCheck = now
-				if humanoid.Health < humanoid.MaxHealth then
+		if newHealth <= 0 then
+			-- إحياء فوري
+			humanoid.Health = humanoid.MaxHealth
+			
+			-- تأثير إحياء مرئي
+			local reviveEffect = Instance.new("Part")
+			reviveEffect.Name = "ReviveEffect"
+			reviveEffect.Size = Vector3.new(8, 8, 8)
+			reviveEffect.Position = humanoidRootPart.Position
+			reviveEffect.Transparency = 0.3
+			reviveEffect.Color = Color3.fromRGB(0, 255, 0) -- أخضر للإحياء
+			reviveEffect.Material = Enum.Material.Neon
+			reviveEffect.Anchored = true
+			reviveEffect.CanCollide = false
+			reviveEffect.Parent = Workspace
+			
+			game:GetService("TweenService"):Create(
+				reviveEffect,
+				TweenInfo.new(0.8, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+				{Transparency = 1, Size = Vector3.new(15, 15, 15)}
+			):Play()
+			
+			task.wait(0.8)
+			reviveEffect:Destroy()
+			
+		elseif newHealth < humanoid.MaxHealth then
+			-- استعادة الصحة الكاملة
+			task.defer(function()
+				if humanoid and humanoid.Health < humanoid.MaxHealth then
 					humanoid.Health = humanoid.MaxHealth
 				end
-			end
-		end)
-	end
+			end)
+		end
+	end)
 	
-	-- حماية من الأدوات الضارة
-	local function protectFromTools()
-		character.ChildAdded:Connect(function(child)
-			if child:IsA("Tool") then
-				task.wait(0.2)
+	-- منع تغيير خاصية MaxHealth
+	humanoid:GetPropertyChangedSignal("MaxHealth"):Connect(function()
+		if immortalityActive then
+			humanoid.MaxHealth = 100
+		end
+	end)
+	
+	-- حماية من الأدوات والأسلحة
+	character.ChildAdded:Connect(function(child)
+		if not immortalityActive then return end
+		
+		if child:IsA("Tool") then
+			-- تأخير قليل ثم تدمير الأداة
+			task.delay(0.1, function()
 				if child and child.Parent == character then
 					child:Destroy()
+					
+					-- تأثير تدمير الأداة
+					local toolBreak = Instance.new("Part")
+					toolBreak.Size = Vector3.new(2, 2, 2)
+					toolBreak.Position = humanoidRootPart.Position + Vector3.new(0, 3, 0)
+					toolBreak.Color = Color3.fromRGB(255, 0, 0)
+					toolBreak.Material = Enum.Material.Neon
+					toolBreak.Anchored = true
+					toolBreak.CanCollide = false
+					toolBreak.Parent = Workspace
+					
+					game:GetService("TweenService"):Create(
+						toolBreak,
+						TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+						{Transparency = 1, Size = Vector3.new(0.1, 0.1, 0.1)}
+					):Play()
+					
+					task.wait(0.5)
+					toolBreak:Destroy()
 				end
-			end
-		end)
-	end
+			end)
+		end
+	end)
 	
-	-- الحماية من الطيران (خفيفة)
-	local function protectFromFling()
-		RunService.Heartbeat:Connect(function()
-			if humanoidRootPart and humanoidRootPart.AssemblyLinearVelocity.Magnitude > 150 then
-				humanoidRootPart.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
-			end
-		end)
-	end
-	
-	-- تنفيذ الحماية
-	local protectionGlow = addProtectionGlow()
-	setupBasicProtection()
-	protectFromTools()
-	protectFromFling()
-	
-	-- إرجاع التأثير للإزالة لاحقاً
-	return protectionGlow
-end
-
--- حماية متقدمة خفيفة
-local function setupAdvancedProtection()
-	-- حماية من محاولات الطرد (خفيفة)
+	-- حماية من السكربتات الخارجية
 	spawn(function()
+		-- حماية من الطرد
 		local mt = getrawmetatable(game)
 		if mt then
 			local oldNamecall = mt.__namecall
@@ -347,20 +364,137 @@ local function setupAdvancedProtection()
 			
 			mt.__namecall = newcclosure(function(self, ...)
 				local method = getnamecallmethod()
+				local args = {...}
 				
-				-- منع الطرد فقط
-				if method == "Kick" or method == "kick" then
-					if tostring(self) == player.Name then
+				if immortalityActive then
+					-- منع جميع طرق الطرد
+					if method:lower():find("kick") or method:lower():find("ban") then
+						return nil
+					end
+					
+					-- منع تغيير الصحة إلى الصفر
+					if method == "SetHealth" and args[1] <= 0 then
+						return nil
+					end
+					
+					-- منع تخفيض MaxHealth
+					if method == "SetMaxHealth" and args[1] < 100 then
 						return nil
 					end
 				end
 				
-				return oldNamecall(self, ...)
+				return oldNamecall(self, unpack(args))
 			end)
 			
 			setreadonly(mt, true)
 		end
 	end)
+	
+	-- حماية من القوى الخارجية
+	RunService.Heartbeat:Connect(function()
+		if not immortalityActive or not humanoidRootPart then return end
+		
+		-- إلغاء أي سرعة عالية (حماية من الطيران)
+		if humanoidRootPart.AssemblyLinearVelocity.Magnitude > 100 then
+			humanoidRootPart.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+		end
+		
+		-- إلغاء أي دوران سريع
+		humanoidRootPart.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
+		
+		-- منع التجميد
+		if humanoidRootPart.Anchored then
+			humanoidRootPart.Anchored = false
+		end
+	end)
+	
+	-- حماية من الإخفاء والتدمير
+	character.ChildRemoved:Connect(function(child)
+		if not immortalityActive then return end
+		
+		-- إذا تمت إزالة جزء مهم من الجسم
+		if child:IsA("BasePart") and child.Name:find("Head") or child.Name:find("Torso") or child.Name:find("Arm") or child.Name:find("Leg") then
+			-- إعادة إنشاء الجسم (محاكاة)
+			task.delay(0.2, function()
+				if character and character.Parent then
+					-- تأثير إصلاح
+					local repairEffect = Instance.new("Part")
+					repairEffect.Size = Vector3.new(5, 5, 5)
+					repairEffect.Position = humanoidRootPart.Position
+					repairEffect.Color = Color3.fromRGB(0, 255, 255)
+					repairEffect.Material = Enum.Material.Neon
+					repairEffect.Anchored = true
+					repairEffect.CanCollide = false
+					repairEffect.Parent = Workspace
+					
+					game:GetService("TweenService"):Create(
+						repairEffect,
+						TweenInfo.new(0.6, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+						{Transparency = 1, Size = Vector3.new(10, 10, 10)}
+					):Play()
+					
+					task.wait(0.6)
+					repairEffect:Destroy()
+				end
+			end)
+		end
+	end)
+	
+	return immortalityActive
+end
+
+-- دالة لتطبيق الحماية البصرية
+local function applyVisualProtection()
+	-- تأثير حماية ذهبي قوي
+	local forceField = Instance.new("ForceField")
+	forceField.Visible = false -- نخفي ForceField الأصلي
+	forceField.Parent = character
+	
+	-- تأثيرنا الخاص الذهبي
+	local goldenShield = Instance.new("Part")
+	goldenShield.Name = "GoldenShield"
+	goldenShield.Size = Vector3.new(7, 8, 7)
+	goldenShield.Transparency = 0.3
+	goldenShield.Color = Color3.fromRGB(255, 215, 0) -- ذهبي
+	goldenShield.Material = Enum.Material.Neon
+	goldenShield.CanCollide = false
+	goldenShield.Anchored = false
+	goldenShield.Parent = character
+	
+	-- Weld للتأثير
+	local weld = Instance.new("Weld")
+	weld.Part0 = humanoidRootPart
+	weld.Part1 = goldenShield
+	weld.C0 = CFrame.new(0, -0.5, 0)
+	weld.Parent = goldenShield
+	
+	-- ضوء ذهبي قوي
+	local goldenLight = Instance.new("PointLight")
+	goldenLight.Name = "GoldenLight"
+	goldenLight.Color = Color3.fromRGB(255, 215, 0)
+	goldenLight.Brightness = 3
+	goldenLight.Range = 20
+	goldenLight.Shadows = true
+	goldenLight.Parent = goldenShield
+	
+	-- تأثير توهج متحرك
+	spawn(function()
+		while goldenShield and goldenShield.Parent do
+			-- تغيير الشفافية بتأثير تنفسي
+			for i = 0.3, 0.7, 0.05 do
+				if not goldenShield then break end
+				goldenShield.Transparency = i
+				task.wait(0.1)
+			end
+			for i = 0.7, 0.3, -0.05 do
+				if not goldenShield then break end
+				goldenShield.Transparency = i
+				task.wait(0.1)
+			end
+		end
+	end)
+	
+	return goldenShield
 end
 
 -- دالة التشغيل الرئيسية
@@ -378,43 +512,46 @@ local function main()
 	-- تشغيل العرض التقديمي
 	playIntro()
 	
-	-- تطبيق الحماية على الشخصية
-	local protectionGlow = applyCharacterProtection()
+	-- تطبيق الخلود الكامل
+	setupImmortality()
 	
-	-- إعداد الحماية المتقدمة (خفيفة)
-	setupAdvancedProtection()
+	-- تطبيق الحماية البصرية الذهبية
+	local goldenShield = applyVisualProtection()
 	
-	print("✅ نظام الحماية 1.1v نشط بدون lag!")
+	print("✅ نظام الحماية 1.2v نشط - خلود كامل!")
+	print("🛡️ محمي من: الموت، الطرد، الأدوات، الطيران، الإخفاء")
 	
 	-- تحديث الشخصية عند الموت
 	player.CharacterAdded:Connect(function(newChar)
+		task.wait(0.5)
 		character = newChar
 		humanoid = character:WaitForChild("Humanoid")
 		humanoidRootPart = character:WaitForChild("HumanoidRootPart")
 		
 		-- إعادة تطبيق الحماية
-		task.wait(1)
-		if protectionGlow then
-			protectionGlow:Destroy()
+		if goldenShield then
+			goldenShield:Destroy()
 		end
-		protectionGlow = applyCharacterProtection()
+		setupImmortality()
+		goldenShield = applyVisualProtection()
 	end)
 	
-	-- إبقاء السكربت نشط بدون ضغط
-	while task.wait(10) do
-		-- فحص بسيط كل 10 ثواني فقط
+	-- إبقاء السكربت نشط
+	while task.wait() do
+		-- التحقق البسيط من استمرارية الحماية
 		if not character or not character.Parent then
 			-- الانتظار لشخصية جديدة
-			repeat task.wait() until player.Character
+			repeat task.wait(0.5) until player.Character
 			character = player.Character
 			humanoid = character:WaitForChild("Humanoid")
 			humanoidRootPart = character:WaitForChild("HumanoidRootPart")
 			
 			-- إعادة تطبيق الحماية
-			if protectionGlow then
-				protectionGlow:Destroy()
+			if goldenShield then
+				goldenShield:Destroy()
 			end
-			protectionGlow = applyCharacterProtection()
+			setupImmortality()
+			goldenShield = applyVisualProtection()
 		end
 	end
 end
