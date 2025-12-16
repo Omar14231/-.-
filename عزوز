@@ -1,0 +1,485 @@
+-- Services
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Workspace = game:GetService("Workspace")
+
+-- المتغيرات
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+local screenGui
+local blackScreen
+local titleLabel
+local creatorLabel
+local versionLabel
+local protectionBox
+
+-- دالة إنشاء واجهة البداية
+local function createIntroUI()
+	screenGui = Instance.new("ScreenGui")
+	screenGui.Name = "AzouzScriptUI"
+	screenGui.ResetOnSpawn = false
+	screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+	screenGui.Parent = player:WaitForChild("PlayerGui")
+	
+	-- الشاشة السوداء
+	blackScreen = Instance.new("Frame")
+	blackScreen.Name = "BlackScreen"
+	blackScreen.BackgroundColor3 = Color3.new(0, 0, 0)
+	blackScreen.BackgroundTransparency = 1 -- تبدأ شفافة
+	blackScreen.Size = UDim2.new(1, 0, 1, 0)
+	blackScreen.Parent = screenGui
+	
+	-- العنوان "سكريبت عزوز"
+	titleLabel = Instance.new("TextLabel")
+	titleLabel.Name = "Title"
+	titleLabel.Text = "سكريبت عزوز"
+	titleLabel.TextColor3 = Color3.new(1, 1, 1)
+	titleLabel.TextTransparency = 1
+	titleLabel.TextSize = 48
+	titleLabel.Font = Enum.Font.GothamBold
+	titleLabel.BackgroundTransparency = 1
+	titleLabel.Size = UDim2.new(0, 400, 0, 80)
+	titleLabel.Position = UDim2.new(0.5, -200, 0.5, -40)
+	titleLabel.TextStrokeTransparency = 0.8
+	titleLabel.TextStrokeColor3 = Color3.new(0, 0, 0)
+	titleLabel.Parent = screenGui
+	
+	-- "صنع عمر" يمين تحت
+	creatorLabel = Instance.new("TextLabel")
+	creatorLabel.Name = "Creator"
+	creatorLabel.Text = "صنع عمر"
+	creatorLabel.TextColor3 = Color3.new(1, 1, 1)
+	creatorLabel.TextTransparency = 1
+	creatorLabel.TextSize = 24
+	creatorLabel.Font = Enum.Font.Gotham
+	creatorLabel.BackgroundTransparency = 1
+	creatorLabel.Size = UDim2.new(0, 150, 0, 40)
+	creatorLabel.Position = UDim2.new(1, -160, 1, -50)
+	creatorLabel.TextXAlignment = Enum.TextXAlignment.Right
+	creatorLabel.TextStrokeTransparency = 0.8
+	creatorLabel.TextStrokeColor3 = Color3.new(0, 0, 0)
+	creatorLabel.Parent = screenGui
+	
+	-- "1.0v" يسار تحت
+	versionLabel = Instance.new("TextLabel")
+	versionLabel.Name = "Version"
+	versionLabel.Text = "1.0v"
+	versionLabel.TextColor3 = Color3.new(1, 1, 1)
+	versionLabel.TextTransparency = 1
+	versionLabel.TextSize = 20
+	versionLabel.Font = Enum.Font.Gotham
+	versionLabel.BackgroundTransparency = 1
+	versionLabel.Size = UDim2.new(0, 100, 0, 40)
+	versionLabel.Position = UDim2.new(0, 20, 1, -50)
+	versionLabel.TextXAlignment = Enum.TextXAlignment.Left
+	versionLabel.TextStrokeTransparency = 0.8
+	versionLabel.TextStrokeColor3 = Color3.new(0, 0, 0)
+	versionLabel.Parent = screenGui
+end
+
+-- دالة إنشاء مربع الحماية
+local function createProtectionBox()
+	protectionBox = Instance.new("Frame")
+	protectionBox.Name = "ProtectionBox"
+	protectionBox.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+	protectionBox.BackgroundTransparency = 0.8
+	protectionBox.Size = UDim2.new(0, 300, 0, 150)
+	protectionBox.Position = UDim2.new(0.5, -150, 0.5, -75)
+	protectionBox.Visible = false
+	protectionBox.Parent = screenGui
+	
+	-- زوايا دائرية
+	local corner = Instance.new("UICorner")
+	corner.CornerRadius = UDim.new(0, 15)
+	corner.Parent = protectionBox
+	
+	-- تأثير إضاءة
+	local glow = Instance.new("UIStroke")
+	glow.Color = Color3.fromRGB(0, 255, 255)
+	glow.Thickness = 3
+	glow.Transparency = 0.5
+	glow.Parent = protectionBox
+	
+	-- النص الرئيسي
+	local protectionText = Instance.new("TextLabel")
+	protectionText.Name = "ProtectionText"
+	protectionText.Text = "أنت الآن محمي"
+	protectionText.TextColor3 = Color3.fromRGB(0, 255, 255)
+	protectionText.TextSize = 28
+	protectionText.Font = Enum.Font.GothamBold
+	protectionText.BackgroundTransparency = 1
+	protectionText.Size = UDim2.new(1, 0, 0.4, 0)
+	protectionText.Position = UDim2.new(0, 0, 0.2, 0)
+	protectionText.TextStrokeTransparency = 0.7
+	protectionText.TextStrokeColor3 = Color3.new(0, 0, 0)
+	protectionText.Parent = protectionBox
+	
+	-- النص الثانوي
+	local subText = Instance.new("TextLabel")
+	subText.Name = "SubText"
+	subText.Text = "الحماية نشطة ضد جميع التهديدات"
+	subText.TextColor3 = Color3.fromRGB(200, 200, 200)
+	subText.TextSize = 16
+	subText.Font = Enum.Font.Gotham
+	subText.BackgroundTransparency = 1
+	subText.Size = UDim2.new(1, 0, 0.3, 0)
+	subText.Position = UDim2.new(0, 0, 0.5, 0)
+	subText.Parent = protectionBox
+	
+	-- أيقونة الحماية
+	local shieldIcon = Instance.new("ImageLabel")
+	shieldIcon.Name = "ShieldIcon"
+	shieldIcon.Image = "rbxassetid://3926305904"
+	shieldIcon.ImageRectOffset = Vector2.new(524, 204)
+	shieldIcon.ImageRectSize = Vector2.new(36, 36)
+	shieldIcon.ImageColor3 = Color3.fromRGB(0, 255, 255)
+	shieldIcon.BackgroundTransparency = 1
+	shieldIcon.Size = UDim2.new(0, 50, 0, 50)
+	shieldIcon.Position = UDim2.new(0.5, -25, 0.8, -25)
+	shieldIcon.Parent = protectionBox
+end
+
+-- دالة للظهور بالتدريج
+local function fadeIn(object, property, targetValue, duration)
+	local tweenInfo = TweenInfo.new(
+		duration,
+		Enum.EasingStyle.Quad,
+		Enum.EasingDirection.Out
+	)
+	
+	local tween = TweenService:Create(object, tweenInfo, {[property] = targetValue})
+	tween:Play()
+	return tween
+end
+
+-- دالة للإختفاء بالتدريج
+local function fadeOut(object, property, targetValue, duration)
+	local tweenInfo = TweenInfo.new(
+		duration,
+		Enum.EasingStyle.Quad,
+		Enum.EasingDirection.Out
+	)
+	
+	local tween = TweenService:Create(object, tweenInfo, {[property] = targetValue})
+	tween:Play()
+	return tween
+end
+
+-- دالة العرض التقديمي
+local function playIntro()
+	-- 1. ظهور الشاشة السوداء بالتدريج
+	fadeIn(blackScreen, "BackgroundTransparency", 0, 1.5)
+	task.wait(1.5)
+	
+	-- 2. ظهور العنوان بالتدريج
+	fadeIn(titleLabel, "TextTransparency", 0, 1)
+	task.wait(1)
+	
+	-- 3. ظهور "صنع عمر" بالتدريج
+	fadeIn(creatorLabel, "TextTransparency", 0, 0.7)
+	
+	-- 4. ظهور الإصدار بالتدريج
+	fadeIn(versionLabel, "TextTransparency", 0, 0.7)
+	task.wait(1)
+	
+	-- 5. البقاء لمدة 3 ثواني
+	task.wait(3)
+	
+	-- 6. إخفاء كل شيء بالتدريج
+	fadeOut(titleLabel, "TextTransparency", 1, 1)
+	fadeOut(creatorLabel, "TextTransparency", 1, 1)
+	fadeOut(versionLabel, "TextTransparency", 1, 1)
+	task.wait(1)
+	
+	fadeOut(blackScreen, "BackgroundTransparency", 1, 1.5)
+	task.wait(1.5)
+	
+	-- 7. إظهار مربع الحماية
+	protectionBox.Visible = true
+	fadeIn(protectionBox, "BackgroundTransparency", 0.2, 0.5)
+	
+	-- تأثير توهج متكرر
+	coroutine.wrap(function()
+		while protectionBox and protectionBox.Parent do
+			local glowEffect = protectionBox.UIStroke
+			if glowEffect then
+				fadeIn(glowEffect, "Transparency", 0.2, 0.8)
+				task.wait(0.8)
+				fadeOut(glowEffect, "Transparency", 0.5, 0.8)
+				task.wait(0.8)
+			else
+				break
+			end
+		end
+	end)()
+	
+	task.wait(3)
+	
+	-- 8. إخفاء مربع الحماية بالتدريج
+	fadeOut(protectionBox, "BackgroundTransparency", 1, 1)
+	local stroke = protectionBox:FindFirstChild("UIStroke")
+	if stroke then
+		fadeOut(stroke, "Transparency", 1, 1)
+	end
+	task.wait(1)
+	protectionBox:Destroy()
+end
+
+-- =========================================
+-- نظام الحماية المتكامل
+-- =========================================
+
+-- متغيرات الحماية
+local protectionActive = true
+local originalWalkSpeed = 16
+local originalJumpPower = 50
+local originalHealth = 100
+
+-- دالة الحماية من الضربات
+local function protectFromDamage()
+	-- مراقبة تغيرات الصحة
+	humanoid.HealthChanged:Connect(function(newHealth)
+		if protectionActive and newHealth < humanoid.MaxHealth then
+			-- إعادة الصحة إلى أقصى قيمة
+			task.spawn(function()
+				task.wait(0.1)
+				if humanoid and humanoid.Health < humanoid.MaxHealth then
+					humanoid.Health = humanoid.MaxHealth
+					
+					-- تأثير مرئي
+					local effect = Instance.new("Part")
+					effect.Name = "ProtectionEffect"
+					effect.Size = Vector3.new(5, 5, 5)
+					effect.Position = character.HumanoidRootPart.Position
+					effect.Transparency = 0.5
+					effect.Color = Color3.fromRGB(0, 255, 255)
+					effect.Material = Enum.Material.Neon
+					effect.Anchored = true
+					effect.CanCollide = false
+					effect.Parent = Workspace
+					
+					local weld = Instance.new("Weld")
+					weld.Part0 = character.HumanoidRootPart
+					weld.Part1 = effect
+					weld.C0 = CFrame.new()
+					weld.Parent = effect
+					
+					-- اختفاء التدريجي
+					game:GetService("TweenService"):Create(
+						effect,
+						TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+						{Transparency = 1}
+					):Play()
+					
+					task.wait(0.5)
+					effect:Destroy()
+				end
+			end)
+		end
+	end)
+	
+	-- منع الضربات من اللاعبين الآخرين
+	character.ChildAdded:Connect(function(child)
+		if protectionActive and child:IsA("Tool") then
+			-- إزالة أي أدوات قد تضر
+			child:Destroy()
+		end
+	end)
+end
+
+-- دالة الحماية من الطرد
+local function protectFromKick()
+	local function checkKickAttempts()
+		-- مراقبة التغيرات في الخواص التي قد تشير إلى محاولة طرد
+		local mt = getrawmetatable(game)
+		local oldNamecall = mt.__namecall
+		
+		setreadonly(mt, false)
+		
+		mt.__namecall = newcclosure(function(self, ...)
+			local method = getnamecallmethod()
+			local args = {...}
+			
+			if protectionActive then
+				-- منع أي محاولات لطرد اللاعب
+				if method == "Kick" or method == "kick" then
+					return nil
+				end
+				
+				-- منع تغيير سرعة المشي والقفز
+				if method == "SetWalkSpeed" and (args[1] < 0 or args[1] > 1000) then
+					return nil
+				end
+				
+				if method == "SetJumpPower" and (args[1] < 0 or args[1] > 200) then
+					return nil
+				end
+				
+				-- منع تغيير الصحة إلى قيم سلبية
+				if method == "SetHealth" and args[1] <= 0 then
+					return nil
+				end
+			end
+			
+			return oldNamecall(self, unpack(args))
+		end)
+		
+		setreadonly(mt, true)
+	end
+	
+	-- تنفيذ الحماية
+	pcall(checkKickAttempts)
+end
+
+-- دالة الحماية من الطيران القسري
+local function protectFromFling()
+	-- مراقبة الجسم البشري
+	local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+	local bodyVelocity = Instance.new("BodyVelocity")
+	bodyVelocity.Name = "AntiFling"
+	bodyVelocity.MaxForce = Vector3.new(0, 0, 0)
+	bodyVelocity.Velocity = Vector3.new(0, 0, 0)
+	bodyVelocity.Parent = humanoidRootPart
+	
+	-- مراقبة التغيرات في القوة
+	RunService.Heartbeat:Connect(function()
+		if protectionActive and character and humanoidRootPart then
+			-- إعادة تعيين السرعة الزاوية
+			humanoidRootPart.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
+			
+			-- الحفاظ على الوضعية
+			if humanoidRootPart.AssemblyLinearVelocity.Magnitude > 100 then
+				humanoidRootPart.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+			end
+			
+			-- منع الدوران السريع
+			humanoidRootPart.RotVelocity = Vector3.new(0, 0, 0)
+		end
+	end)
+end
+
+-- دالة الحماية من السكربتات الضارة
+local function protectFromScripts()
+	-- مراقبة السكربتات المحقونة
+	local function monitorScripts()
+		while protectionActive do
+			task.wait(1)
+			
+			-- التحقق من السكربتات الغريبة
+			for _, v in pairs(player.PlayerGui:GetChildren()) do
+				if v:IsA("LocalScript") and v.Name ~= "AzouzScriptUI" then
+					v:Destroy()
+				end
+			end
+		end
+	end
+	
+	coroutine.wrap(monitorScripts)()
+	
+	-- حماية الخصائص
+	humanoid:GetPropertyChangedSignal("WalkSpeed"):Connect(function()
+		if protectionActive and (humanoid.WalkSpeed < 0 or humanoid.WalkSpeed > 100) then
+			humanoid.WalkSpeed = originalWalkSpeed
+		end
+	end)
+	
+	humanoid:GetPropertyChangedSignal("JumpPower"):Connect(function()
+		if protectionActive and (humanoid.JumpPower < 0 or humanoid.JumpPower > 100) then
+			humanoid.JumpPower = originalJumpPower
+		end
+	end)
+	
+	humanoid:GetPropertyChangedSignal("Health"):Connect(function()
+		if protectionActive and humanoid.Health <= 0 then
+			humanoid.Health = humanoid.MaxHealth
+		end
+	end)
+end
+
+-- دالة الحماية من الدمج (F3X)
+local function protectFromF3X()
+	-- مراقبة الأدوات التي قد تسبب الدمج
+	Workspace.ChildAdded:Connect(function(child)
+		if protectionActive and child:IsA("Tool") then
+			-- تأخير بسيط ثم التحقق
+			task.wait(0.1)
+			
+			-- إذا كانت الأداة قريبة من شخصيتك
+			if character and character:FindFirstChild("HumanoidRootPart") then
+				local distance = (child.Handle.Position - character.HumanoidRootPart.Position).Magnitude
+				if distance < 20 then
+					-- تدمير الأداة الخطيرة
+					child:Destroy()
+					
+					-- تأثير مرئي للحماية
+					local explosion = Instance.new("Explosion")
+					explosion.Position = character.HumanoidRootPart.Position
+					explosion.BlastPressure = 0
+					explosion.BlastRadius = 10
+					explosion.Visible = false
+					explosion.Parent = Workspace
+				end
+			end
+		end
+	end)
+end
+
+-- دالة الحماية من التجميد
+local function protectFromFreeze()
+	-- منع التجميد
+	character:WaitForChild("HumanoidRootPart").Anchored = false
+	
+	-- مراقبة أي محاولة للتجميد
+	character.HumanoidRootPart:GetPropertyChangedSignal("Anchored"):Connect(function()
+		if protectionActive and character.HumanoidRootPart.Anchored then
+			character.HumanoidRootPart.Anchored = false
+		end
+	end)
+end
+
+-- دالة تنشيط كل أنظمة الحماية
+local function activateFullProtection()
+	-- تفعيل جميع أنظمة الحماية
+	protectFromDamage()
+	protectFromKick()
+	protectFromFling()
+	protectFromScripts()
+	protectFromF3X()
+	protectFromFreeze()
+	
+	-- رسالة تأكيد
+	print("✅ نظام الحماية نشط!")
+	print("🔒 محمي من: الضرب - الطرد - الطيران - السكربتات الضارة - الدمج - التجميد")
+end
+
+-- دالة التشغيل الرئيسية
+local function main()
+	-- الانتظار حتى يكون اللاعب جاهزًا
+	repeat task.wait() until player.Character and player.Character:FindFirstChild("Humanoid")
+	character = player.Character
+	humanoid = character:FindFirstChild("Humanoid")
+	
+	-- إنشاء الواجهة
+	createIntroUI()
+	createProtectionBox()
+	
+	-- تشغيل العرض التقديمي
+	playIntro()
+	
+	-- تفعيل الحماية الكاملة
+	activateFullProtection()
+	
+	-- إبقاء السكربت نشط
+	while task.wait(5) do
+		if not protectionActive then
+			protectionActive = true
+			activateFullProtection()
+		end
+	end
+end
+
+-- بدء التشغيل
+coroutine.wrap(main)()
