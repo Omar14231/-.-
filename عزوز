@@ -51,7 +51,7 @@ local function createUI()
 	-- عنوان Azouz script (مركز الشاشة)
 	titleLabel = Instance.new("TextLabel")
 	titleLabel.Name = "Title"
-	titleLabel.Text = "سكريبت عزوز"
+	titleLabel.Text = "سكريبت عمر"
 	titleLabel.TextColor3 = Color3.new(1, 1, 1)
 	titleLabel.TextTransparency = 1 -- يبدأ شفاف
 	titleLabel.TextSize = 48
