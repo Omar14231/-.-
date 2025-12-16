@@ -1,456 +1,939 @@
 -- Services
-local Lighting = game:GetService("Lighting")
-local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local SoundService = game:GetService("SoundService")
-local Workspace = game:GetService("Workspace")
+local RunService = game:GetService("RunService")
+local TextService = game:GetService("TextService")
+local HttpService = game:GetService("HttpService")
+local UserInputService = game:GetService("UserInputService")
+local ContentProvider = game:GetService("ContentProvider")
 
--- إعدادات المطر
-local RAIN_DENSITY = 500 -- عدد قطرات المطر
-local RAIN_SPEED = 200 -- سرعة المطر
-local RAIN_LENGTH = 20 -- طول قطرات المطر
-local NIGHT_TIME = 0 -- وقت الليل (24 ساعة)
+-- متغيرات للعناصر
+local screenGui
+local blackScreen
+local titleLabel
+local arabLabel
+local versionLabel
+local introSound
+local rainImage
+local rainTitleLabel
+local rainSound
+local rainParticles = {}
 
--- متغيرات
-local rainParts = {}
-local rainConnections = {}
-local skyParts = {}
-local sound
-local player = Players.LocalPlayer
+-- متغيرات للواجهة الجديدة
+local mainButton
+local controlFrame
+local scrollFrame
+local uiListLayout
+local closeButton
+local playerSection
+local musicSection
+local speedSection
 
--- دالة لتحويل الوقت إلى ليل
-local function setNightTime()
-	Lighting.ClockTime = NIGHT_TIME
-	Lighting.TimeOfDay = "00:00:00"
-	
-	-- تغيير إعدادات السماء
-	Lighting.Brightness = 0.1
-	Lighting.OutdoorAmbient = Color3.fromRGB(50, 50, 70)
-	Lighting.FogColor = Color3.fromRGB(20, 20, 40)
-	Lighting.FogEnd = 1000
-	Lighting.GeographicLatitude = 45
-	
-	-- تعديل الشمس
-	if Lighting:FindFirstChild("SunRaysEffect") then
-		Lighting.SunRaysEffect.Intensity = 0.01
-	end
-	
-	-- تعديل الضباب
-	if Lighting:FindFirstChild("Atmosphere") then
-		Lighting.Atmosphere.Density = 0.3
-		Lighting.Atmosphere.Offset = 0.25
-		Lighting.Atmosphere.Color = Color3.fromRGB(100, 100, 150)
-		Lighting.Atmosphere.Decay = Color3.fromRGB(50, 50, 100)
-		Lighting.Atmosphere.Glare = 0
-		Lighting.Atmosphere.Haze = 5
-	end
-	
-	-- تعديل السماء
-	if Lighting:FindFirstChild("Sky") then
-		Lighting.Sky.MoonTextureId = "rbxassetid://6444320592"
-		Lighting.Sky.MoonAngularSize = 30
-		Lighting.Sky.StarCount = 5000
-		Lighting.Sky.SunTextureId = ""
-		
-		-- غيوم ليلية
-		Lighting.Sky.Clouds.Enabled = true
-		Lighting.Sky.Clouds.Color = Color3.fromRGB(40, 40, 60)
-		Lighting.Sky.Clouds.Cover = 0.8
-		Lighting.Sky.Clouds.Density = 0.7
-	end
+-- دالة لإنشاء الواجهة
+local function createUI()
+	-- إنشاء ScreenGui
+	screenGui = Instance.new("ScreenGui")
+	screenGui.Name = "AzouzScriptUI"
+	screenGui.ResetOnSpawn = false
+	screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+	screenGui.Parent = Players.LocalPlayer:WaitForChild("PlayerGui")
+
+	-- إنشاء الشاشة السوداء (المرحلة الأولى)
+	blackScreen = Instance.new("Frame")
+	blackScreen.Name = "BlackScreen"
+	blackScreen.BackgroundColor3 = Color3.new(0, 0, 0)
+	blackScreen.BackgroundTransparency = 1 -- تبدأ شفافة
+	blackScreen.Size = UDim2.new(1, 0, 1, 0)
+	blackScreen.ZIndex = 10
+	blackScreen.Parent = screenGui
+
+	-- عنوان Azouz script (مركز الشاشة)
+	titleLabel = Instance.new("TextLabel")
+	titleLabel.Name = "Title"
+	titleLabel.Text = "سكريبت عزوز"
+	titleLabel.TextColor3 = Color3.new(1, 1, 1)
+	titleLabel.TextTransparency = 1 -- يبدأ شفاف
+	titleLabel.TextSize = 48
+	titleLabel.Font = Enum.Font.GothamBold
+	titleLabel.BackgroundTransparency = 1
+	titleLabel.Size = UDim2.new(0, 300, 0, 80)
+	titleLabel.Position = UDim2.new(0.5, -150, 0.5, -40)
+	titleLabel.ZIndex = 11
+	titleLabel.Parent = screenGui
+
+	-- تسمية عربي (يمين أسفل)
+	arabLabel = Instance.new("TextLabel")
+	arabLabel.Name = "Arab"
+	arabLabel.Text = "عربي"
+	arabLabel.TextColor3 = Color3.new(1, 1, 1)
+	arabLabel.TextTransparency = 1 -- يبدأ شفاف
+	arabLabel.TextSize = 24
+	arabLabel.Font = Enum.Font.GothamBold
+	arabLabel.BackgroundTransparency = 1
+	arabLabel.Size = UDim2.new(0, 100, 0, 40)
+	arabLabel.Position = UDim2.new(1, -120, 1, -50) -- يمين أسفل
+	arabLabel.TextXAlignment = Enum.TextXAlignment.Right
+	arabLabel.ZIndex = 11
+	arabLabel.Parent = screenGui
+
+	-- تسمية الإصدار (يسار أسفل)
+	versionLabel = Instance.new("TextLabel")
+	versionLabel.Name = "Version"
+	versionLabel.Text = "1.0v"
+	versionLabel.TextColor3 = Color3.new(1, 1, 1)
+	versionLabel.TextTransparency = 1 -- يبدأ شفاف
+	versionLabel.TextSize = 18
+	versionLabel.Font = Enum.Font.GothamBold
+	versionLabel.BackgroundTransparency = 1
+	versionLabel.Size = UDim2.new(0, 100, 0, 40)
+	versionLabel.Position = UDim2.new(0, 20, 1, -50) -- يسار أسفل
+	versionLabel.TextXAlignment = Enum.TextXAlignment.Left
+	versionLabel.ZIndex = 11
+	versionLabel.Parent = screenGui
 end
 
--- دالة لإنشاء اسم "عزوز" في السماء
-local function createSkyName()
-	-- إزالة الأجزاء القديمة إن وجدت
-	for _, part in pairs(skyParts) do
-		part:Destroy()
-	end
-	skyParts = {}
+-- دالة لإنشاء واجهة التحكم بعد الانتهاء
+local function createControlUI()
+	-- الزر الرئيسي لفتح القائمة
+	mainButton = Instance.new("TextButton")
+	mainButton.Name = "MainButton"
+	mainButton.Text = "☰"
+	mainButton.TextColor3 = Color3.new(1, 1, 1)
+	mainButton.TextSize = 28
+	mainButton.Font = Enum.Font.GothamBold
+	mainButton.BackgroundColor3 = Color3.fromRGB(0, 120, 215)
+	mainButton.BorderSizePixel = 0
+	mainButton.Size = UDim2.new(0, 60, 0, 60)
+	mainButton.Position = UDim2.new(0, 20, 0.5, -30)
+	mainButton.ZIndex = 10
+	mainButton.Visible = false -- يبدأ مخفي
+	mainButton.Parent = screenGui
 	
-	-- تحديد موقع فوق رأس اللاعب
-	local character = player.Character
-	if not character then return end
+	-- إضافة زوايا دائرية
+	local buttonCorner = Instance.new("UICorner")
+	buttonCorner.CornerRadius = UDim.new(0.5, 0)
+	buttonCorner.Parent = mainButton
 	
-	local head = character:FindFirstChild("Head")
-	if not head then return end
+	local buttonStroke = Instance.new("UIStroke")
+	buttonStroke.Color = Color3.new(1, 1, 1)
+	buttonStroke.Thickness = 2
+	buttonStroke.Parent = mainButton
 	
-	-- إنشاء اسم "عزوز" بحروف مضيئة
-	local letters = {
-		ع = {
-			{-1, 2}, {0, 2}, {1, 2}, {2, 1}, {2, 0}, {1, -1}, {0, -2}, {-1, -1}, {-2, 0}, {-2, 1}
-		},
-		ز = {
-			{-1, 2}, {0, 2}, {1, 2}, {1, 1}, {0, 0}, {-1, -1}, {-1, -2}, {0, -2}, {1, -2}
-		},
-		و = {
-			{0, 2}, {0, 1}, {0, 0}, {-1, -1}, {0, -2}, {1, -1}
-		}
-	}
+	-- إطار القائمة الرئيسي
+	controlFrame = Instance.new("Frame")
+	controlFrame.Name = "ControlPanel"
+	controlFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+	controlFrame.BackgroundTransparency = 0.1
+	controlFrame.Size = UDim2.new(0, 380, 0, 500)
+	controlFrame.Position = UDim2.new(0, 20, 0.5, -250)
+	controlFrame.BorderSizePixel = 0
+	controlFrame.Visible = false -- يبدأ مخفي
+	controlFrame.Parent = screenGui
 	
-	local letterSpacing = 6
-	local totalWidth = 0
+	-- تأثير الزوايا الملوّنة
+	local uiGradient = Instance.new("UIGradient")
+	uiGradient.Rotation = 45
+	uiGradient.Color = ColorSequence.new({
+		ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 50, 50)),
+		ColorSequenceKeypoint.new(0.25, Color3.fromRGB(50, 255, 50)),
+		ColorSequenceKeypoint.new(0.5, Color3.fromRGB(50, 50, 255)),
+		ColorSequenceKeypoint.new(0.75, Color3.fromRGB(255, 255, 50)),
+		ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 50, 255))
+	})
+	uiGradient.Transparency = NumberSequence.new(0.7)
+	uiGradient.Parent = controlFrame
 	
-	-- حساب العرض الإجمالي
-	for i = 1, 3 do
-		if i == 1 then totalWidth = totalWidth + 4
-		elseif i == 2 then totalWidth = totalWidth + 4
-		else totalWidth = totalWidth + 3 end
-	end
+	-- زر الإغلاق (X)
+	closeButton = Instance.new("TextButton")
+	closeButton.Name = "CloseButton"
+	closeButton.Text = "X"
+	closeButton.TextColor3 = Color3.new(1, 1, 1)
+	closeButton.TextSize = 20
+	closeButton.Font = Enum.Font.GothamBold
+	closeButton.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+	closeButton.BorderSizePixel = 0
+	closeButton.Size = UDim2.new(0, 35, 0, 35)
+	closeButton.Position = UDim2.new(1, -40, 0, 10)
+	closeButton.ZIndex = 5
+	closeButton.Visible = false
+	closeButton.Parent = controlFrame
 	
-	totalWidth = totalWidth + (letterSpacing * 2)
-	local startX = -totalWidth / 2
+	-- إطار التمرير
+	scrollFrame = Instance.new("ScrollingFrame")
+	scrollFrame.Name = "ScrollFrame"
+	scrollFrame.BackgroundTransparency = 1
+	scrollFrame.BorderSizePixel = 0
+	scrollFrame.Size = UDim2.new(1, -20, 1, -80)
+	scrollFrame.Position = UDim2.new(0, 10, 0, 60)
+	scrollFrame.CanvasSize = UDim2.new(0, 0, 0, 0) -- سيتم تعديله تلقائياً
+	scrollFrame.ScrollBarThickness = 10
+	scrollFrame.ScrollBarImageColor3 = Color3.fromRGB(100, 100, 150)
+	scrollFrame.Parent = controlFrame
 	
-	-- إنشاء الحروف
-	local letterIndex = 0
-	for letterName, points in pairs(letters) do
-		for _, point in pairs(points) do
-			local x = startX + (letterIndex * letterSpacing) + point[1]
-			local y = point[2]
-			
-			local part = Instance.new("Part")
-			part.Name = "SkyLetter"
-			part.Size = Vector3.new(0.5, 0.5, 0.5)
-			part.Position = head.Position + Vector3.new(x * 2, 50 + y, 0)
-			part.Anchored = true
-			part.CanCollide = false
-			part.Material = Enum.Material.Neon
-			part.BrickColor = BrickColor.new("Cyan")
-			part.Transparency = 0.1
-			
-			-- جعلها مضيئة
-			local light = Instance.new("PointLight")
-			light.Brightness = 2
-			light.Range = 10
-			light.Color = Color3.fromRGB(0, 255, 255)
-			light.Parent = part
-			
-			-- تأثير توهج
-			local surfaceGui = Instance.new("SurfaceGui")
-			surfaceGui.Face = Enum.NormalId.Top
-			surfaceGui.AlwaysOnTop = true
-			surfaceGui.Parent = part
-			
-			local frame = Instance.new("Frame")
-			frame.Size = UDim2.new(1, 0, 1, 0)
-			frame.BackgroundColor3 = Color3.fromRGB(0, 200, 255)
-			frame.BackgroundTransparency = 0.7
-			frame.BorderSizePixel = 0
-			frame.Parent = surfaceGui
-			
-			part.Parent = Workspace
-			table.insert(skyParts, part)
-		end
-		letterIndex = letterIndex + 1
-	end
+	-- ListLayout لإدارة العناصر داخل ScrollingFrame
+	uiListLayout = Instance.new("UIListLayout")
+	uiListLayout.Name = "ListLayout"
+	uiListLayout.Padding = UDim.new(0, 15)
+	uiListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+	uiListLayout.Parent = scrollFrame
 	
-	-- إنارة إضافية حول الاسم
-	for i = 1, 20 do
-		local angle = math.rad(i * 18)
-		local radius = 15
-		local x = math.cos(angle) * radius
-		local z = math.sin(angle) * radius
+	-- تعديل حجم الـ Canvas تلقائياً
+	uiListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+		scrollFrame.CanvasSize = UDim2.new(0, 0, 0, uiListLayout.AbsoluteContentSize.Y + 20)
+	end)
+	
+	-- العنوان الرئيسي
+	local mainTitle = Instance.new("TextLabel")
+	mainTitle.Name = "MainTitle"
+	mainTitle.Text = "سكريبت عزوز"
+	mainTitle.TextColor3 = Color3.new(1, 1, 1)
+	mainTitle.TextSize = 22
+	mainTitle.Font = Enum.Font.GothamBold
+	mainTitle.BackgroundTransparency = 1
+	mainTitle.Size = UDim2.new(1, -50, 0, 40)
+	mainTitle.Position = UDim2.new(0, 15, 0, 15)
+	mainTitle.TextXAlignment = Enum.TextXAlignment.Right
+	mainTitle.Parent = controlFrame
+	
+	-- إنشاء الأقسام داخل ScrollingFrame
+	createSections()
+	
+	-- إضافة زوايا دائرية
+	local frameCorner = Instance.new("UICorner")
+	frameCorner.CornerRadius = UDim.new(0, 15)
+	frameCorner.Parent = controlFrame
+	
+	local closeCorner = Instance.new("UICorner")
+	closeCorner.CornerRadius = UDim.new(0.5, 0)
+	closeCorner.Parent = closeButton
+	
+	local closeStroke = Instance.new("UIStroke")
+	closeStroke.Color = Color3.new(1, 1, 1)
+	closeStroke.Thickness = 1.5
+	closeStroke.Parent = closeButton
+	
+	-- إضافة ظل للواجهة
+	local uiStroke = Instance.new("UIStroke")
+	uiStroke.Color = Color3.fromRGB(100, 100, 150)
+	uiStroke.Thickness = 3
+	uiStroke.Parent = controlFrame
+	
+	-- إضافة تأثير إضاءة
+	local uiGlow = Instance.new("ImageLabel")
+	uiGlow.Name = "GlowEffect"
+	uiGlow.Image = "rbxassetid://8992233623"
+	uiGlow.ImageColor3 = Color3.fromRGB(100, 100, 200)
+	uiGlow.ImageTransparency = 0.8
+	uiGlow.ScaleType = Enum.ScaleType.Slice
+	uiGlow.SliceCenter = Rect.new(100, 100, 100, 100)
+	uiGlow.BackgroundTransparency = 1
+	uiGlow.Size = UDim2.new(1, 40, 1, 40)
+	uiGlow.Position = UDim2.new(0, -20, 0, -20)
+	uiGlow.Parent = controlFrame
+end
+
+-- دالة لإنشاء أقسام القائمة
+local function createSections()
+	-- قسم البحث عن لاعب
+	playerSection = Instance.new("Frame")
+	playerSection.Name = "PlayerSection"
+	playerSection.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+	playerSection.BorderSizePixel = 0
+	playerSection.Size = UDim2.new(1, 0, 0, 130)
+	playerSection.LayoutOrder = 1
+	playerSection.Parent = scrollFrame
+	
+	local playerTitle = Instance.new("TextLabel")
+	playerTitle.Name = "PlayerTitle"
+	playerTitle.Text = "🔍 البحث عن لاعب"
+	playerTitle.TextColor3 = Color3.new(1, 1, 1)
+	playerTitle.TextSize = 18
+	playerTitle.Font = Enum.Font.GothamBold
+	playerTitle.BackgroundTransparency = 1
+	playerTitle.Size = UDim2.new(1, -20, 0, 40)
+	playerTitle.Position = UDim2.new(0, 10, 0, 0)
+	playerTitle.TextXAlignment = Enum.TextXAlignment.Right
+	playerTitle.Parent = playerSection
+	
+	local playerInfo = Instance.new("TextLabel")
+	playerInfo.Name = "PlayerInfo"
+	playerInfo.Text = "اكتب حرفين على الأقل من اسم اللاعب"
+	playerInfo.TextColor3 = Color3.fromRGB(180, 180, 180)
+	playerInfo.TextSize = 12
+	playerInfo.Font = Enum.Font.Gotham
+	playerInfo.BackgroundTransparency = 1
+	playerInfo.Size = UDim2.new(1, -20, 0, 20)
+	playerInfo.Position = UDim2.new(0, 10, 0, 35)
+	playerInfo.TextXAlignment = Enum.TextXAlignment.Right
+	playerInfo.Parent = playerSection
+	
+	local playerTextBox = Instance.new("TextBox")
+	playerTextBox.Name = "PlayerTextBox"
+	playerTextBox.PlaceholderText = "اسم اللاعب..."
+	playerTextBox.Text = ""
+	playerTextBox.TextColor3 = Color3.new(1, 1, 1)
+	playerTextBox.TextSize = 14
+	playerTextBox.Font = Enum.Font.Gotham
+	playerTextBox.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+	playerTextBox.BorderSizePixel = 0
+	playerTextBox.Size = UDim2.new(1, -20, 0, 35)
+	playerTextBox.Position = UDim2.new(0, 10, 0, 60)
+	playerTextBox.TextXAlignment = Enum.TextXAlignment.Right
+	playerTextBox.Parent = playerSection
+	
+	local playerSearchButton = Instance.new("TextButton")
+	playerSearchButton.Name = "SearchButton"
+	playerSearchButton.Text = "انقل إلى اللاعب"
+	playerSearchButton.TextColor3 = Color3.new(1, 1, 1)
+	playerSearchButton.TextSize = 14
+	playerSearchButton.Font = Enum.Font.GothamBold
+	playerSearchButton.BackgroundColor3 = Color3.fromRGB(0, 120, 215)
+	playerSearchButton.BorderSizePixel = 0
+	playerSearchButton.Size = UDim2.new(1, -20, 0, 35)
+	playerSearchButton.Position = UDim2.new(0, 10, 0, 100)
+	playerSearchButton.Parent = playerSection
+	
+	-- قسم الموسيقى
+	musicSection = Instance.new("Frame")
+	musicSection.Name = "MusicSection"
+	musicSection.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+	musicSection.BorderSizePixel = 0
+	musicSection.Size = UDim2.new(1, 0, 0, 130)
+	musicSection.LayoutOrder = 2
+	musicSection.Parent = scrollFrame
+	
+	local musicTitle = Instance.new("TextLabel")
+	musicTitle.Name = "MusicTitle"
+	musicTitle.Text = "🎵 تشغيل الموسيقى"
+	musicTitle.TextColor3 = Color3.new(1, 1, 1)
+	musicTitle.TextSize = 18
+	musicTitle.Font = Enum.Font.GothamBold
+	musicTitle.BackgroundTransparency = 1
+	musicTitle.Size = UDim2.new(1, -20, 0, 40)
+	musicTitle.Position = UDim2.new(0, 10, 0, 0)
+	musicTitle.TextXAlignment = Enum.TextXAlignment.Right
+	musicTitle.Parent = musicSection
+	
+	local musicInfo = Instance.new("TextLabel")
+	musicInfo.Name = "MusicInfo"
+	musicInfo.Text = "أدخل ID الصوت من موقع روبلوكس"
+	musicInfo.TextColor3 = Color3.fromRGB(180, 180, 180)
+	musicInfo.TextSize = 12
+	musicInfo.Font = Enum.Font.Gotham
+	musicInfo.BackgroundTransparency = 1
+	musicInfo.Size = UDim2.new(1, -20, 0, 20)
+	musicInfo.Position = UDim2.new(0, 10, 0, 35)
+	musicInfo.TextXAlignment = Enum.TextXAlignment.Right
+	musicInfo.Parent = musicSection
+	
+	local musicTextBox = Instance.new("TextBox")
+	musicTextBox.Name = "MusicTextBox"
+	musicTextBox.PlaceholderText = "أدخل ID الصوت..."
+	musicTextBox.Text = ""
+	musicTextBox.TextColor3 = Color3.new(1, 1, 1)
+	musicTextBox.TextSize = 14
+	musicTextBox.Font = Enum.Font.Gotham
+	musicTextBox.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+	musicTextBox.BorderSizePixel = 0
+	musicTextBox.Size = UDim2.new(1, -20, 0, 35)
+	musicTextBox.Position = UDim2.new(0, 10, 0, 60)
+	musicTextBox.TextXAlignment = Enum.TextXAlignment.Right
+	musicTextBox.Parent = musicSection
+	
+	local musicPlayButton = Instance.new("TextButton")
+	musicPlayButton.Name = "PlayButton"
+	musicPlayButton.Text = "▶ تشغيل"
+	musicPlayButton.TextColor3 = Color3.new(1, 1, 1)
+	musicPlayButton.TextSize = 14
+	musicPlayButton.Font = Enum.Font.GothamBold
+	musicPlayButton.BackgroundColor3 = Color3.fromRGB(0, 180, 0)
+	musicPlayButton.BorderSizePixel = 0
+	musicPlayButton.Size = UDim2.new(0.48, -10, 0, 35)
+	musicPlayButton.Position = UDim2.new(0, 10, 0, 100)
+	musicPlayButton.Parent = musicSection
+	
+	local musicStopButton = Instance.new("TextButton")
+	musicStopButton.Name = "StopButton"
+	musicStopButton.Text = "⏹ إيقاف"
+	musicStopButton.TextColor3 = Color3.new(1, 1, 1)
+	musicStopButton.TextSize = 14
+	musicStopButton.Font = Enum.Font.GothamBold
+	musicStopButton.BackgroundColor3 = Color3.fromRGB(180, 0, 0)
+	musicStopButton.BorderSizePixel = 0
+	musicStopButton.Size = UDim2.new(0.48, -10, 0, 35)
+	musicStopButton.Position = UDim2.new(0.52, 0, 0, 100)
+	musicStopButton.Parent = musicSection
+	
+	-- قسم السرعة
+	speedSection = Instance.new("Frame")
+	speedSection.Name = "SpeedSection"
+	speedSection.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+	speedSection.BorderSizePixel = 0
+	speedSection.Size = UDim2.new(1, 0, 0, 130)
+	speedSection.LayoutOrder = 3
+	speedSection.Parent = scrollFrame
+	
+	local speedTitle = Instance.new("TextLabel")
+	speedTitle.Name = "SpeedTitle"
+	speedTitle.Text = "⚡ تعديل السرعة"
+	speedTitle.TextColor3 = Color3.new(1, 1, 1)
+	speedTitle.TextSize = 18
+	speedTitle.Font = Enum.Font.GothamBold
+	speedTitle.BackgroundTransparency = 1
+	speedTitle.Size = UDim2.new(1, -20, 0, 40)
+	speedTitle.Position = UDim2.new(0, 10, 0, 0)
+	speedTitle.TextXAlignment = Enum.TextXAlignment.Right
+	speedTitle.Parent = speedSection
+	
+	local speedInfo = Instance.new("TextLabel")
+	speedInfo.Name = "SpeedInfo"
+	speedInfo.Text = "السرعة الطبيعية: 16"
+	speedInfo.TextColor3 = Color3.fromRGB(180, 180, 180)
+	speedInfo.TextSize = 12
+	speedInfo.Font = Enum.Font.Gotham
+	speedInfo.BackgroundTransparency = 1
+	speedInfo.Size = UDim2.new(1, -20, 0, 20)
+	speedInfo.Position = UDim2.new(0, 10, 0, 35)
+	speedInfo.TextXAlignment = Enum.TextXAlignment.Right
+	speedInfo.Parent = speedSection
+	
+	local speedTextBox = Instance.new("TextBox")
+	speedTextBox.Name = "SpeedTextBox"
+	speedTextBox.PlaceholderText = "أدخل السرعة الجديدة..."
+	speedTextBox.Text = ""
+	speedTextBox.TextColor3 = Color3.new(1, 1, 1)
+	speedTextBox.TextSize = 14
+	speedTextBox.Font = Enum.Font.Gotham
+	speedTextBox.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+	speedTextBox.BorderSizePixel = 0
+	speedTextBox.Size = UDim2.new(1, -20, 0, 35)
+	speedTextBox.Position = UDim2.new(0, 10, 0, 60)
+	speedTextBox.TextXAlignment = Enum.TextXAlignment.Right
+	speedTextBox.Parent = speedSection
+	
+	local speedApplyButton = Instance.new("TextButton")
+	speedApplyButton.Name = "SpeedButton"
+	speedApplyButton.Text = "تطبيق السرعة"
+	speedApplyButton.TextColor3 = Color3.new(1, 1, 1)
+	speedApplyButton.TextSize = 14
+	speedApplyButton.Font = Enum.Font.GothamBold
+	speedApplyButton.BackgroundColor3 = Color3.fromRGB(215, 120, 0)
+	speedApplyButton.BorderSizePixel = 0
+	speedApplyButton.Size = UDim2.new(1, -20, 0, 35)
+	speedApplyButton.Position = UDim2.new(0, 10, 0, 100)
+	speedApplyButton.Parent = speedSection
+	
+	-- إضافة زوايا دائرية لجميع الأقسام
+	for _, section in pairs({playerSection, musicSection, speedSection}) do
+		local corner = Instance.new("UICorner")
+		corner.CornerRadius = UDim.new(0, 10)
+		corner.Parent = section
 		
-		local part = Instance.new("Part")
-		part.Name = "SkyGlow"
-		part.Size = Vector3.new(1, 1, 1)
-		part.Position = head.Position + Vector3.new(x, 50, z)
-		part.Anchored = true
-		part.CanCollide = false
-		part.Material = Enum.Material.Neon
-		part.BrickColor = BrickColor.new("Cyan")
-		part.Transparency = 0.8
-		
-		local light = Instance.new("PointLight")
-		light.Brightness = 1
-		light.Range = 15
-		light.Color = Color3.fromRGB(100, 200, 255)
-		light.Parent = part
-		
-		part.Parent = Workspace
-		table.insert(skyParts, part)
+		local stroke = Instance.new("UIStroke")
+		stroke.Color = Color3.fromRGB(80, 80, 100)
+		stroke.Thickness = 2
+		stroke.Parent = section
 	end
 	
-	-- تحديث موقع الاسم باستمرار
-	local updateConnection = RunService.RenderStepped:Connect(function()
-		if character and head then
-			for i, part in pairs(skyParts) do
-				if part.Name == "SkyLetter" then
-					local offset = part.Position - head.Position
-					part.Position = head.Position + Vector3.new(offset.X, 50, offset.Z)
-				elseif part.Name == "SkyGlow" then
-					local offset = part.Position - head.Position
-					part.Position = head.Position + Vector3.new(offset.X, 50, offset.Z)
-				end
-			end
+	-- إضافة زوايا دائرية لمربعات النص والأزرار
+	for _, textBox in pairs({playerTextBox, musicTextBox, speedTextBox}) do
+		local corner = Instance.new("UICorner")
+		corner.CornerRadius = UDim.new(0, 5)
+		corner.Parent = textBox
+		
+		local stroke = Instance.new("UIStroke")
+		stroke.Color = Color3.fromRGB(60, 60, 80)
+		stroke.Thickness = 1
+		stroke.Parent = textBox
+	end
+	
+	for _, button in pairs({playerSearchButton, musicPlayButton, musicStopButton, speedApplyButton}) do
+		local corner = Instance.new("UICorner")
+		corner.CornerRadius = UDim.new(0, 7)
+		corner.Parent = button
+		
+		local stroke = Instance.new("UIStroke")
+		stroke.Color = Color3.new(1, 1, 1)
+		stroke.Thickness = 1
+		stroke.Transparency = 0.3
+		stroke.Parent = button
+		
+		-- تأثير عند الضغط
+		button.MouseButton1Down:Connect(function()
+			button.BackgroundTransparency = 0.3
+		end)
+		
+		button.MouseButton1Up:Connect(function()
+			button.BackgroundTransparency = 0
+		end)
+		
+		button.MouseLeave:Connect(function()
+			button.BackgroundTransparency = 0
+		end)
+	end
+	
+	-- إضافة أحداث للأزرار
+	playerSearchButton.MouseButton1Click:Connect(function()
+		local playerName = playerTextBox.Text
+		searchPlayer(playerName)
+	end)
+	
+	musicPlayButton.MouseButton1Click:Connect(function()
+		local soundId = musicTextBox.Text
+		playMusic(soundId)
+	end)
+	
+	musicStopButton.MouseButton1Click:Connect(function()
+		stopMusic()
+	end)
+	
+	speedApplyButton.MouseButton1Click:Connect(function()
+		local newSpeed = speedTextBox.Text
+		changeSpeed(newSpeed)
+	end)
+	
+	-- إضافة أحداث عند الضغط على Enter
+	playerTextBox.FocusLost:Connect(function(enterPressed)
+		if enterPressed then
+			searchPlayer(playerTextBox.Text)
 		end
 	end)
 	
-	table.insert(rainConnections, updateConnection)
+	musicTextBox.FocusLost:Connect(function(enterPressed)
+		if enterPressed then
+			playMusic(musicTextBox.Text)
+		end
+	end)
+	
+	speedTextBox.FocusLost:Connect(function(enterPressed)
+		if enterPressed then
+			changeSpeed(speedTextBox.Text)
+		end
+	end)
 end
 
--- دالة لإنشاء المطر
-local function createRain()
-	-- تنظيف المطر القديم
-	cleanupRain()
+-- دالة للبحث عن لاعب
+local function searchPlayer(playerName)
+	-- البحث عن العناصر
+	local playerTextBox = playerSection:FindFirstChild("PlayerTextBox")
+	if not playerTextBox then return end
 	
-	-- إنشاء قطرات المطر
-	for i = 1, RAIN_DENSITY do
-		local rainPart = Instance.new("Part")
-		rainPart.Name = "RainDrop"
-		rainPart.Size = Vector3.new(0.1, RAIN_LENGTH, 0.1)
-		rainPart.Transparency = 0.3
-		rainPart.Color = Color3.fromRGB(150, 200, 255)
-		rainPart.Material = Enum.Material.Neon
-		rainPart.CanCollide = false
-		rainPart.Anchored = true
-		rainPart.CastShadow = false
-		
-		-- توهج خفيف للمطر
-		local light = Instance.new("PointLight")
-		light.Brightness = 0.5
-		light.Range = 5
-		light.Color = Color3.fromRGB(100, 150, 255)
-		light.Parent = rainPart
-		
-		-- وضع عشوائي في السماء
-		local x = math.random(-200, 200)
-		local y = math.random(50, 100)
-		local z = math.random(-200, 200)
-		rainPart.Position = Vector3.new(x, y, z)
-		
-		rainPart.Parent = Workspace
-		table.insert(rainParts, rainPart)
+	if #playerName < 2 then
+		playerTextBox.Text = "أدخل حرفين على الأقل"
+		task.wait(1)
+		playerTextBox.Text = ""
+		return
 	end
 	
-	-- تأثير صوت المطر
-	sound = Instance.new("Sound")
-	sound.Name = "RainSound"
-	sound.SoundId = "rbxassetid://911847055" -- صوت مطر واقعي
-	sound.Volume = 0.6
-	sound.Looped = true
-	sound.Parent = Workspace
-	sound:Play()
+	local players = Players:GetPlayers()
+	local foundPlayers = {}
 	
-	-- جعل المطر يتحرك
-	local rainUpdate = RunService.RenderStepped:Connect(function(deltaTime)
-		for _, rainPart in pairs(rainParts) do
-			-- تحريك المطر للأسفل
-			local currentPos = rainPart.Position
-			local newY = currentPos.Y - (RAIN_SPEED * deltaTime)
-			
-			-- إذا وصل المطر للأرض، أعده للأعلى
-			if newY < 0 then
-				newY = math.random(50, 100)
-				rainPart.Position = Vector3.new(
-					math.random(-200, 200),
-					newY,
-					math.random(-200, 200)
-				)
-			else
-				rainPart.Position = Vector3.new(
-					currentPos.X,
-					newY,
-					currentPos.Z
-				)
-			end
-			
-			-- اهتزاز خفيف للمطر لجعله واقعي
-			rainPart.CFrame = rainPart.CFrame * CFrame.Angles(
-				math.rad(math.random(-5, 5)) * deltaTime,
-				math.rad(math.random(-5, 5)) * deltaTime,
-				0
-			)
+	for _, player in pairs(players) do
+		if string.find(string.lower(player.Name), string.lower(playerName)) then
+			table.insert(foundPlayers, player)
 		end
+	end
+	
+	if #foundPlayers == 1 then
+		-- إذا وجد لاعب واحد فقط، انقل الكاميرا إليه
+		local targetPlayer = foundPlayers[1]
+		if targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
+			-- نقل الكاميرا إلى اللاعب
+			workspace.CurrentCamera.CameraSubject = targetPlayer.Character.Humanoid
+			workspace.CurrentCamera.CFrame = CFrame.new(
+				targetPlayer.Character.HumanoidRootPart.Position + Vector3.new(0, 5, 10),
+				targetPlayer.Character.HumanoidRootPart.Position
+			)
+			
+			playerTextBox.Text = "تم النقل إلى: " .. targetPlayer.Name
+			task.wait(2)
+			playerTextBox.Text = ""
+		end
+	elseif #foundPlayers > 1 then
+		playerTextBox.Text = "وجدت " .. #foundPlayers .. " لاعبين"
+		task.wait(2)
+		playerTextBox.Text = ""
+	else
+		playerTextBox.Text = "لم يتم العثور على لاعب"
+		task.wait(1)
+		playerTextBox.Text = ""
+	end
+end
+
+-- دالة لتشغيل الموسيقى
+local function playMusic(soundId)
+	-- البحث عن العناصر
+	local musicTextBox = musicSection:FindFirstChild("MusicTextBox")
+	if not musicTextBox then return end
+	
+	if soundId == "" then return end
+	
+	-- تنظيف الصوت القديم
+	stopMusic()
+	
+	-- إنشاء صوت جديد
+	local newSound = Instance.new("Sound")
+	newSound.Name = "AzouzScriptMusic"
+	newSound.SoundId = "rbxassetid://" .. soundId
+	newSound.Volume = 0.5
+	newSound.Looped = false
+	newSound.Parent = workspace
+	
+	-- محاولة تشغيل الصوت
+	local success, errorMsg = pcall(function()
+		newSound:Play()
+	end)
+	
+	if success then
+		musicTextBox.Text = "جاري التشغيل..."
+		task.wait(1)
+		musicTextBox.Text = soundId
+	else
+		musicTextBox.Text = "خطأ في ID الصوت"
+		task.wait(1)
+		musicTextBox.Text = ""
+	end
+end
+
+-- دالة لإيقاف الموسيقى
+local function stopMusic()
+	local oldSound = workspace:FindFirstChild("AzouzScriptMusic")
+	if oldSound then
+		oldSound:Stop()
+		oldSound:Destroy()
+	end
+end
+
+-- دالة لتعديل السرعة
+local function changeSpeed(newSpeed)
+	-- البحث عن العناصر
+	local speedTextBox = speedSection:FindFirstChild("SpeedTextBox")
+	if not speedTextBox then return end
+	
+	local speedNumber = tonumber(newSpeed)
+	
+	if not speedNumber then
+		speedTextBox.Text = "أدخل رقم صحيح"
+		task.wait(1)
+		speedTextBox.Text = ""
+		return
+	end
+	
+	if speedNumber < 0 or speedNumber > 1000 then
+		speedTextBox.Text = "السرعة بين 0 و 1000"
+		task.wait(1)
+		speedTextBox.Text = ""
+		return
+	end
+	
+	local player = Players.LocalPlayer
+	if player.Character then
+		local humanoid = player.Character:FindFirstChild("Humanoid")
+		if humanoid then
+			humanoid.WalkSpeed = speedNumber
+			speedTextBox.Text = "تم التطبيق: " .. speedNumber
+			task.wait(1)
+			speedTextBox.Text = tostring(speedNumber)
+		end
+	end
+end
+
+-- دالة لإنشاء الأصوات
+local function createSounds()
+	-- الصوت الرئيسي للمطر
+	rainSound = Instance.new("Sound")
+	rainSound.Name = "RainSound"
+	rainSound.SoundId = "rbxassetid://142376088"
+	rainSound.Volume = 0.4
+	rainSound.Looped = true
+	rainSound.Parent = SoundService
+end
+
+-- دالة للتدريج
+local function fadeIn(object, property, targetValue, duration)
+	local tweenInfo = TweenInfo.new(
+		duration,
+		Enum.EasingStyle.Quad,
+		Enum.EasingDirection.Out
+	)
+	
+	local tween = TweenService:Create(object, tweenInfo, {[property] = targetValue})
+	tween:Play()
+	return tween
+end
+
+-- دالة للظهور بالتدريج
+local function fadeOut(object, property, targetValue, duration)
+	local tweenInfo = TweenInfo.new(
+		duration,
+		Enum.EasingStyle.Quad,
+		Enum.EasingDirection.Out
+	)
+	
+	local tween = TweenService:Create(object, tweenInfo, {[property] = targetValue})
+	tween:Play()
+	return tween
+end
+
+-- دالة لفتح/إغلاق القائمة
+local function toggleMenu(isOpening)
+	if isOpening then
+		-- فتح القائمة
+		controlFrame.Visible = true
+		closeButton.Visible = true
 		
-		-- تحديث موقع المطر حول اللاعب
-		local character = player.Character
-		if character then
-			local root = character:FindFirstChild("HumanoidRootPart")
-			if root then
-				for _, rainPart in pairs(rainParts) do
-					local distance = (rainPart.Position - root.Position).Magnitude
-					if distance > 150 then
-						local direction = (rainPart.Position - root.Position).Unit
-						rainPart.Position = root.Position + (direction * 100) + Vector3.new(0, 50, 0)
+		-- تأثير الظهور
+		controlFrame.Position = UDim2.new(0, 20, 0.5, -250)
+		controlFrame.BackgroundTransparency = 1
+		closeButton.BackgroundTransparency = 1
+		
+		local frameFade = fadeIn(controlFrame, "BackgroundTransparency", 0.1, 0.3)
+		local closeFade = fadeIn(closeButton, "BackgroundTransparency", 0, 0.3)
+		
+		-- تحريك من اليسار
+		local slideIn = TweenService:Create(
+			controlFrame,
+			TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
+			{Position = UDim2.new(0, 20, 0.5, -250)}
+		)
+		slideIn:Play()
+		
+	else
+		-- إغلاق القائمة
+		local frameFade = fadeOut(controlFrame, "BackgroundTransparency", 1, 0.3)
+		local closeFade = fadeOut(closeButton, "BackgroundTransparency", 1, 0.3)
+		
+		-- تحريك إلى اليسار
+		local slideOut = TweenService:Create(
+			controlFrame,
+			TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.In),
+			{Position = UDim2.new(-0.5, 0, 0.5, -250)}
+		)
+		slideOut:Play()
+		
+		task.wait(0.4)
+		controlFrame.Visible = false
+		closeButton.Visible = false
+	end
+end
+
+-- دالة لإنشاء تأثير المطر
+local function createRainEffect()
+	-- إخفاء الزر الرئيسي إن كان ظاهراً
+	if mainButton and mainButton.Visible then
+		mainButton.Visible = false
+	end
+	
+	-- إخفاء القائمة إن كانت مفتوحة
+	if controlFrame and controlFrame.Visible then
+		toggleMenu(false)
+	end
+	
+	-- تنظيف أي أمطار سابقة
+	clearRainEffect()
+	
+	-- تشغيل صوت المطر
+	rainSound:Play()
+	
+	-- إنشاء تأثير المطر
+	local player = Players.LocalPlayer
+	if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+		local rootPart = player.Character.HumanoidRootPart
+		
+		-- إنشاء 30 قطرة مطر حول اللاعب
+		for i = 1, 30 do
+			local rainDrop = Instance.new("ImageLabel")
+			rainDrop.Name = "RainDrop" .. i
+			rainDrop.Image = "rbxassetid://119124450956423" -- صورة قطرة المطر
+			rainDrop.BackgroundTransparency = 1
+			rainDrop.Size = UDim2.new(0, 30, 0, 30)
+			rainDrop.Position = UDim2.new(
+				math.random() * 0.8 + 0.1, -- X position (10%-90%)
+				-math.random(100, 500), -- Y start position (above screen)
+				0,
+				math.random() * 0.8 + 0.1 -- Z position (10%-90%)
+			)
+			rainDrop.ZIndex = 5
+			rainDrop.Parent = screenGui
+			
+			-- جعلها شفافة قليلاً
+			rainDrop.ImageTransparency = 0.3
+			
+			-- إضافة إلى الجدول
+			table.insert(rainParticles, rainDrop)
+			
+			-- تأثير السقوط
+			coroutine.wrap(function()
+				while rainDrop and rainDrop.Parent do
+					-- تحريك قطرة المطر للأسفل
+					local tween = TweenService:Create(
+						rainDrop,
+						TweenInfo.new(1, Enum.EasingStyle.Linear),
+						{Position = UDim2.new(
+							rainDrop.Position.X.Scale,
+							rainDrop.Position.X.Offset,
+							rainDrop.Position.Y.Scale,
+							rainDrop.Position.Y.Offset + 1000
+						)}
+					)
+					
+					tween:Play()
+					task.wait(1)
+					
+					-- إعادة تعيين الموضع عندما تصل إلى الأسفل
+					if rainDrop and rainDrop.Parent then
+						rainDrop.Position = UDim2.new(
+							math.random() * 0.8 + 0.1,
+							-math.random(100, 500),
+							0,
+							math.random() * 0.8 + 0.1
+						)
 					end
 				end
+			end)()
+		end
+		
+		-- إنشاء مؤقت لإعادة تشغيل المطر كل 1.25 دقيقة
+		local rainTimer = 0
+		local rainDuration = 85 -- 1.25 دقيقة = 75 ثانية + 10 ثواني إضافية
+		
+		coroutine.wrap(function()
+			while rainSound and rainSound.IsPlaying do
+				task.wait(1)
+				rainTimer = rainTimer + 1
+				
+				-- إذا مضت 85 ثانية، إعادة تشغيل الصوت
+				if rainTimer >= rainDuration then
+					rainTimer = 0
+					rainSound:Stop()
+					task.wait(0.5)
+					rainSound:Play()
+				end
 			end
-		end
-	end)
-	
-	table.insert(rainConnections, rainUpdate)
+		end)()
+	end
 end
 
--- دالة لتنظيف المطر
-local function cleanupRain()
-	-- إيقاف الصوت
-	if sound then
-		sound:Stop()
-		sound:Destroy()
-		sound = nil
+-- دالة لتنظيف تأثير المطر
+local function clearRainEffect()
+	-- إيقاف صوت المطر
+	if rainSound then
+		rainSound:Stop()
 	end
 	
-	-- إزالة قطرات المطر
-	for _, part in pairs(rainParts) do
-		part:Destroy()
-	end
-	rainParts = {}
-	
-	-- قطع الاتصالات
-	for _, connection in pairs(rainConnections) do
-		connection:Disconnect()
-	end
-	rainConnections = {}
-	
-	-- إزالة اسم السماء
-	for _, part in pairs(skyParts) do
-		part:Destroy()
-	end
-	skyParts = {}
-end
-
--- دالة لإنشاء تأثيرات إضافية
-local function createEffects()
-	-- برق عشوائي
-	local lightningConnection = RunService.Heartbeat:Connect(function()
-		if math.random(1, 500) == 1 then -- فرصة 0.2% كل إطار
-			-- وميض السماء
-			local originalBrightness = Lighting.Brightness
-			
-			-- وميض سريع
-			for i = 1, 3 do
-				Lighting.Brightness = 0.5
-				task.wait(0.05)
-				Lighting.Brightness = originalBrightness
-				task.wait(0.05)
-			end
-			
-			-- صوت الرعد بعد البرق
-			task.wait(math.random(1, 3))
-			
-			local thunderSound = Instance.new("Sound")
-			thunderSound.SoundId = "rbxassetid://911847133" -- صوت رعد
-			thunderSound.Volume = 0.4
-			thunderSound.Parent = Workspace
-			thunderSound:Play()
-			
-			game.Debris:AddItem(thunderSound, 5)
-		end
-	end)
-	
-	table.insert(rainConnections, lightningConnection)
-	
-	-- تأثير ضباب متحرك
-	local fogParticles = Instance.new("Part")
-	fogParticles.Name = "FogEffect"
-	fogParticles.Size = Vector3.new(200, 50, 200)
-	fogParticles.Position = Vector3.new(0, 5, 0)
-	fogParticles.Transparency = 1
-	fogParticles.Anchored = true
-	fogParticles.CanCollide = false
-	fogParticles.Parent = Workspace
-	
-	local particleEmitter = Instance.new("ParticleEmitter")
-	particleEmitter.Rate = 100
-	particleEmitter.Lifetime = NumberRange.new(10, 20)
-	particleEmitter.Size = NumberSequence.new({
-		NumberSequenceKeypoint.new(0, 5),
-		NumberSequenceKeypoint.new(0.5, 10),
-		NumberSequenceKeypoint.new(1, 15)
-	})
-	particleEmitter.Transparency = NumberSequence.new({
-		NumberSequenceKeypoint.new(0, 0.7),
-		NumberSequenceKeypoint.new(0.5, 0.5),
-		NumberSequenceKeypoint.new(1, 0.9)
-	})
-	particleEmitter.Color = ColorSequence.new(Color3.fromRGB(150, 180, 220))
-	particleEmitter.VelocitySpread = 50
-	particleEmitter.Speed = NumberRange.new(2, 5)
-	particleEmitter.Rotation = NumberRange.new(0, 360)
-	particleEmitter.Parent = fogParticles
-	
-	-- تأثير تنقيط على الأرض
-	local groundWetness = Instance.new("Part")
-	groundWetness.Name = "GroundWetness"
-	groundWetness.Size = Vector3.new(500, 0.1, 500)
-	groundWetness.Position = Vector3.new(0, 0.1, 0)
-	groundWetness.Anchored = true
-	groundWetness.CanCollide = false
-	groundWetness.Material = Enum.Material.SmoothPlastic
-	groundWetness.Color = Color3.fromRGB(40, 60, 80)
-	groundWetness.Transparency = 0.7
-	groundWetness.Parent = Workspace
-	
-	-- توهج الأرض
-	local groundLight = Instance.new("SurfaceLight")
-	groundLight.Face = Enum.NormalId.Top
-	groundLight.Brightness = 0.1
-	groundLight.Range = 20
-	groundLight.Color = Color3.fromRGB(50, 100, 150)
-	groundLight.Parent = groundWetness
-	
-	table.insert(rainParts, fogParticles)
-	table.insert(rainParts, groundWetness)
-end
-
--- دالة رئيسية لبدء التأثيرات
-local function startRainEffect()
-	-- انتظار تحميل الشخصية
-	repeat task.wait() until player.Character
-	player.CharacterAdded:Connect(function()
-		task.wait(1) -- انتظار تحميل الشخصية
-		createSkyName()
-	end)
-	
-	-- تعيين وقت الليل
-	setNightTime()
-	
-	-- إنشاء المطر
-	createRain()
-	
-	-- إنشاء التأثيرات الإضافية
-	createEffects()
-	
-	-- إنشاء اسم "عزوز" في السماء
-	createSkyName()
-	
-	-- منع تغيير الوقت تلقائياً
-	Lighting:GetPropertyChangedSignal("ClockTime"):Connect(function()
-		if Lighting.ClockTime ~= NIGHT_TIME then
-			Lighting.ClockTime = NIGHT_TIME
-		end
-	end)
-	
-	print("✅ تم تفعيل تأثير المطر الليلي مع اسم 'عزوز' في السماء!")
-end
-
--- دالة لإيقاف التأثيرات
-local function stopRainEffect()
-	cleanupRain()
-	
-	-- إعادة إعدادات الإضاءة الطبيعية
-	Lighting.Brightness = 1
-	Lighting.OutdoorAmbient = Color3.fromRGB(128, 128, 128)
-	Lighting.FogColor = Color3.fromRGB(191, 191, 191)
-	Lighting.FogEnd = 100000
-	
-	print("✅ تم إيقاف تأثير المطر الليلي")
-end
-
--- بدء التأثيرات تلقائياً عند تشغيل السكريبت
-startRainEffect()
-
--- إرجاع دوال التحكم للاستخدام الخارجي
-return {
-	StartRain = startRainEffect,
-	StopRain = stopRainEffect,
-	ToggleRain = function()
-		if #rainParts > 0 then
-			stopRainEffect()
-		else
-			startRainEffect()
+	-- إزالة جميع قطرات المطر
+	for _, drop in pairs(rainParticles) do
+		if drop and drop.Parent then
+			drop:Destroy()
 		end
 	end
-}
+	
+	rainParticles = {}
+end
+
+-- الدالة الرئيسية للتشغيل
+local function playIntro()
+	-- المرحلة 1: ظهور الشاشة السوداء بالتدريج
+	fadeIn(blackScreen, "BackgroundTransparency", 0, 2)
+	task.wait(2)
+	
+	-- المرحلة 2: ظهور العنوان بالتدريج
+	fadeIn(titleLabel, "TextTransparency", 0, 1.5)
+	fadeIn(arabLabel, "TextTransparency", 0, 1.5)
+	fadeIn(versionLabel, "TextTransparency", 0, 1.5)
+	task.wait(2.5)
+	
+	-- المرحلة 3: إخفاء كل شيء بالتدريج
+	fadeOut(blackScreen, "BackgroundTransparency", 1, 2)
+	fadeOut(titleLabel, "TextTransparency", 1, 2)
+	fadeOut(arabLabel, "TextTransparency", 1, 2)
+	fadeOut(versionLabel, "TextTransparency", 1, 2)
+	task.wait(2.5)
+	
+	-- المرحلة 4: إظهار الشاشة السوداء مرة أخرى
+	fadeIn(blackScreen, "BackgroundTransparency", 0, 2)
+	task.wait(2)
+	
+	-- المرحلة 5: إظهار صورة المطر
+	rainImage = Instance.new("ImageLabel")
+	rainImage.Name = "RainImage"
+	rainImage.Image = "rbxassetid://119124450956423"
+	rainImage.BackgroundTransparency = 1
+	rainImage.Size = UDim2.new(0, 200, 0, 200)
+	rainImage.Position = UDim2.new(0.5, -100, 0.5, -100)
+	rainImage.ZIndex = 11
+	rainImage.ImageTransparency = 1
+	rainImage.Parent = screenGui
+	
+	rainTitleLabel = Instance.new("TextLabel")
+	rainTitleLabel.Name = "RainTitle"
+	rainTitleLabel.Text = "سكريبت الامطار"
+	rainTitleLabel.TextColor3 = Color3.new(1, 1, 1)
+	rainTitleLabel.TextTransparency = 1
+	rainTitleLabel.TextSize = 32
+	rainTitleLabel.Font = Enum.Font.GothamBold
+	rainTitleLabel.BackgroundTransparency = 1
+	rainTitleLabel.Size = UDim2.new(0, 300, 0, 50)
+	rainTitleLabel.Position = UDim2.new(0.5, -150, 0.6, 0)
+	rainTitleLabel.ZIndex = 11
+	rainTitleLabel.Parent = screenGui
+	
+	-- ظهور الصورة والعنوان بالتدريج
+	fadeIn(rainImage, "ImageTransparency", 0.2, 1)
+	fadeIn(rainTitleLabel, "TextTransparency", 0, 1)
+	task.wait(2)
+	
+	-- المرحلة 6: إخفاء كل شيء بالتدريج
+	fadeOut(blackScreen, "BackgroundTransparency", 1, 2)
+	fadeOut(rainImage, "ImageTransparency", 1, 2)
+	fadeOut(rainTitleLabel, "TextTransparency", 1, 2)
+	task.wait(2.5)
+	
+	-- تنظيف عناصر المقدمة
+	if titleLabel then titleLabel:Destroy() end
+	if arabLabel then arabLabel:Destroy() end
+	if versionLabel then versionLabel:Destroy() end
+	if rainImage then rainImage:Destroy() end
+	if rainTitleLabel then rainTitleLabel:Destroy() end
+	
+	-- المرحلة 7: بدء تأثير المطر
+	createRainEffect()
+	
+	-- بعد 5 ثواني، إظهار الزر الرئيسي
+	task.wait(5)
+	mainButton.Visible = true
+	fadeIn(mainButton, "BackgroundTransparency", 0, 0.5)
+	
+	-- إنشاء واجهة التحكم (مخفية في البداية)
+	createControlUI()
+	
+	-- أحداث الأزرار
+	mainButton.MouseButton1Click:Connect(function()
+		toggleMenu(true)
+		mainButton.Visible = false
+	end)
+	
+	closeButton.MouseButton1Click:Connect(function()
+		toggleMenu(false)
+		mainButton.Visible = true
+		fadeIn(mainButton, "BackgroundTransparency", 0, 0.3)
+	end)
+end
+
+-- دالة التشغيل الرئيسية
+local function main()
+	-- الانتظار حتى يكون اللاعب جاهزًا
+	local player = Players.LocalPlayer
+	repeat task.wait() until player.Character and player.Character:FindFirstChild("Humanoid")
+	
+	-- إنشاء الواجهة والأصوات
+	createUI()
+	createSounds()
+	
+	-- تشغيل المقدمة
+	playIntro()
+end
+
+-- بدء التشغيل
+coroutine.wrap(main)()
