@@ -6,7 +6,6 @@ local RunService = game:GetService("RunService")
 local TextService = game:GetService("TextService")
 local HttpService = game:GetService("HttpService")
 local UserInputService = game:GetService("UserInputService")
-local ContentProvider = game:GetService("ContentProvider")
 
 -- متغيرات للعناصر
 local screenGui
@@ -15,8 +14,8 @@ local titleLabel
 local arabLabel
 local versionLabel
 local introSound
-local rainImage
-local rainTitleLabel
+local logoImage
+local logoTitleLabel
 local rainSound
 local rainParticles = {}
 
@@ -34,7 +33,7 @@ local speedSection
 local function createUI()
 	-- إنشاء ScreenGui
 	screenGui = Instance.new("ScreenGui")
-	screenGui.Name = "AzouzScriptUI"
+	screenGui.Name = "RsScriptUI"
 	screenGui.ResetOnSpawn = false
 	screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 	screenGui.Parent = Players.LocalPlayer:WaitForChild("PlayerGui")
@@ -48,21 +47,21 @@ local function createUI()
 	blackScreen.ZIndex = 10
 	blackScreen.Parent = screenGui
 
-	-- عنوان 𝑹𝑺 script (مركز الشاشة)
+	-- عنوان (مركز الشاشة)
 	titleLabel = Instance.new("TextLabel")
 	titleLabel.Name = "Title"
-	titleLabel.Text = "𝑺𝒄𝒓𝒊𝒑𝒕 𝑹𝑺"
+	titleLabel.Text = "𝑺𝒄𝒓𝒊𝒑𝒕"
 	titleLabel.TextColor3 = Color3.new(1, 1, 1)
 	titleLabel.TextTransparency = 1 -- يبدأ شفاف
 	titleLabel.TextSize = 48
 	titleLabel.Font = Enum.Font.GothamBold
 	titleLabel.BackgroundTransparency = 1
-	titleLabel.Size = UDim2.new(0, 300, 0, 80)
-	titleLabel.Position = UDim2.new(0.5, -150, 0.5, -40)
+	titleLabel.Size = UDim2.new(0, 200, 0, 80)
+	titleLabel.Position = UDim2.new(0.5, -100, 0.5, -40)
 	titleLabel.ZIndex = 11
 	titleLabel.Parent = screenGui
 
-	-- تسمية عربي (يمين أسفل)
+	-- تسمية (يمين أسفل)
 	arabLabel = Instance.new("TextLabel")
 	arabLabel.Name = "Arab"
 	arabLabel.Text = "عربي"
@@ -186,7 +185,7 @@ local function createControlUI()
 	-- العنوان الرئيسي
 	local mainTitle = Instance.new("TextLabel")
 	mainTitle.Name = "MainTitle"
-	mainTitle.Text = "سكريبت عزوز"
+	mainTitle.Text = "Rs Script Panel"
 	mainTitle.TextColor3 = Color3.new(1, 1, 1)
 	mainTitle.TextSize = 22
 	mainTitle.Font = Enum.Font.GothamBold
@@ -574,7 +573,7 @@ local function playMusic(soundId)
 	
 	-- إنشاء صوت جديد
 	local newSound = Instance.new("Sound")
-	newSound.Name = "AzouzScriptMusic"
+	newSound.Name = "RsScriptMusic"
 	newSound.SoundId = "rbxassetid://" .. soundId
 	newSound.Volume = 0.5
 	newSound.Looped = false
@@ -598,7 +597,7 @@ end
 
 -- دالة لإيقاف الموسيقى
 local function stopMusic()
-	local oldSound = workspace:FindFirstChild("AzouzScriptMusic")
+	local oldSound = workspace:FindFirstChild("RsScriptMusic")
 	if oldSound then
 		oldSound:Stop()
 		oldSound:Destroy()
@@ -855,47 +854,47 @@ local function playIntro()
 	fadeIn(blackScreen, "BackgroundTransparency", 0, 2)
 	task.wait(2)
 	
-	-- المرحلة 5: إظهار صورة المطر
-	rainImage = Instance.new("ImageLabel")
-	rainImage.Name = "RainImage"
-	rainImage.Image = "rbxassetid://119124450956423"
-	rainImage.BackgroundTransparency = 1
-	rainImage.Size = UDim2.new(0, 200, 0, 200)
-	rainImage.Position = UDim2.new(0.5, -100, 0.5, -100)
-	rainImage.ZIndex = 11
-	rainImage.ImageTransparency = 1
-	rainImage.Parent = screenGui
+	-- المرحلة 5: إظهار صورة Rs مع الاسم تحتها
+	logoImage = Instance.new("ImageLabel")
+	logoImage.Name = "LogoImage"
+	logoImage.Image = "rbxassetid://124430035705741"
+	logoImage.BackgroundTransparency = 1
+	logoImage.Size = UDim2.new(0, 200, 0, 200)
+	logoImage.Position = UDim2.new(0.5, -100, 0.4, -100) -- أعلى قليلاً لترك مسافة للاسم
+	logoImage.ZIndex = 11
+	logoImage.ImageTransparency = 1
+	logoImage.Parent = screenGui
 	
-	rainTitleLabel = Instance.new("TextLabel")
-	rainTitleLabel.Name = "RainTitle"
-	rainTitleLabel.Text = "سكريبت الامطار"
-	rainTitleLabel.TextColor3 = Color3.new(1, 1, 1)
-	rainTitleLabel.TextTransparency = 1
-	rainTitleLabel.TextSize = 32
-	rainTitleLabel.Font = Enum.Font.GothamBold
-	rainTitleLabel.BackgroundTransparency = 1
-	rainTitleLabel.Size = UDim2.new(0, 300, 0, 50)
-	rainTitleLabel.Position = UDim2.new(0.5, -150, 0.6, 0)
-	rainTitleLabel.ZIndex = 11
-	rainTitleLabel.Parent = screenGui
+	logoTitleLabel = Instance.new("TextLabel")
+	logoTitleLabel.Name = "LogoTitle"
+	logoTitleLabel.Text = "𝑹𝒔 | الاصلى"
+	logoTitleLabel.TextColor3 = Color3.new(1, 1, 1)
+	logoTitleLabel.TextTransparency = 1
+	logoTitleLabel.TextSize = 28
+	logoTitleLabel.Font = Enum.Font.GothamBold
+	logoTitleLabel.BackgroundTransparency = 1
+	logoTitleLabel.Size = UDim2.new(0, 300, 0, 40)
+	logoTitleLabel.Position = UDim2.new(0.5, -150, 0.65, 0) -- تحت الصورة مباشرة
+	logoTitleLabel.ZIndex = 11
+	logoTitleLabel.Parent = screenGui
 	
 	-- ظهور الصورة والعنوان بالتدريج
-	fadeIn(rainImage, "ImageTransparency", 0.2, 1)
-	fadeIn(rainTitleLabel, "TextTransparency", 0, 1)
+	fadeIn(logoImage, "ImageTransparency", 0, 1)
+	fadeIn(logoTitleLabel, "TextTransparency", 0, 1)
 	task.wait(2)
 	
 	-- المرحلة 6: إخفاء كل شيء بالتدريج
 	fadeOut(blackScreen, "BackgroundTransparency", 1, 2)
-	fadeOut(rainImage, "ImageTransparency", 1, 2)
-	fadeOut(rainTitleLabel, "TextTransparency", 1, 2)
+	fadeOut(logoImage, "ImageTransparency", 1, 2)
+	fadeOut(logoTitleLabel, "TextTransparency", 1, 2)
 	task.wait(2.5)
 	
 	-- تنظيف عناصر المقدمة
 	if titleLabel then titleLabel:Destroy() end
 	if arabLabel then arabLabel:Destroy() end
 	if versionLabel then versionLabel:Destroy() end
-	if rainImage then rainImage:Destroy() end
-	if rainTitleLabel then rainTitleLabel:Destroy() end
+	if logoImage then logoImage:Destroy() end
+	if logoTitleLabel then logoTitleLabel:Destroy() end
 	
 	-- المرحلة 7: بدء تأثير المطر
 	createRainEffect()
