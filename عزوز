@@ -48,10 +48,10 @@ local function createUI()
 	blackScreen.ZIndex = 10
 	blackScreen.Parent = screenGui
 
-	-- عنوان Azouz script (مركز الشاشة)
+	-- عنوان 𝑹𝑺 script (مركز الشاشة)
 	titleLabel = Instance.new("TextLabel")
 	titleLabel.Name = "Title"
-	titleLabel.Text = "سكريبت عمر"
+	titleLabel.Text = "𝑺𝒄𝒓𝒊𝒑𝒕 𝑹𝑺"
 	titleLabel.TextColor3 = Color3.new(1, 1, 1)
 	titleLabel.TextTransparency = 1 -- يبدأ شفاف
 	titleLabel.TextSize = 48
