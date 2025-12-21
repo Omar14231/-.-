@@ -2,6 +2,7 @@
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
+local SoundService = game:GetService("SoundService")
 
 -- التأكد من أن السكريبت يعمل على جانب العميل فقط
 if not RunService:IsClient() then
@@ -11,6 +12,8 @@ end
 -- الحصول على اللاعب المحلي
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
+
+-- ❗ الجزء الأول: المشهد التمهيدي (شاشة الترحيب)
 
 -- إنشاء الشاشة الرئيسية
 local screenGui = Instance.new("ScreenGui")
@@ -239,4 +242,199 @@ wait(2)
 -- إزالة كل شيء
 screenGui:Destroy()
 
-print("اكتمل العرض!")
+print("اكتمل العرض التمهيدي!")
+
+-- ❗ الجزء الثاني: نظام الموت (يعمل بعد انتهاء المشهد التمهيدي)
+
+-- وظيفة إظهار شاشة الموت
+local function showDeathScreen()
+    -- إنشاء شاشة الموت
+    local deathScreenGui = Instance.new("ScreenGui")
+    deathScreenGui.Name = "DeathScreen"
+    deathScreenGui.ResetOnSpawn = false
+    deathScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    deathScreenGui.IgnoreGuiInset = true
+    
+    -- خلفية سوداء شفافة
+    local deathFrame = Instance.new("Frame")
+    deathFrame.Name = "DeathFrame"
+    deathFrame.Size = UDim2.new(1, 0, 1, 0)
+    deathFrame.Position = UDim2.new(0, 0, 0, 0)
+    deathFrame.BackgroundColor3 = Color3.new(0, 0, 0)
+    deathFrame.BackgroundTransparency = 0.7 -- شفافة قليلاً
+    deathFrame.BorderSizePixel = 0
+    deathFrame.Parent = deathScreenGui
+    
+    -- النص "لقد مت"
+    local deathText = Instance.new("TextLabel")
+    deathText.Name = "DeathText"
+    deathText.Size = UDim2.new(0.8, 0, 0.2, 0)
+    deathText.Position = UDim2.new(0.1, 0, 0.3, 0)
+    deathText.BackgroundTransparency = 1
+    deathText.Text = "You Died"
+    deathText.TextColor3 = Color3.new(1, 1, 1)
+    deathText.TextTransparency = 1 -- تبدأ شفافة
+    deathText.TextScaled = true
+    deathText.Font = Enum.Font.GothamBold
+    deathText.TextStrokeColor3 = Color3.new(0, 0, 0)
+    deathText.TextStrokeTransparency = 0.3
+    deathText.Parent = deathFrame
+    
+    -- شريط أحمر من الأسفل يصل للنصف
+    local redBar = Instance.new("Frame")
+    redBar.Name = "RedBar"
+    redBar.Size = UDim2.new(1, 0, 0.02, 0)
+    redBar.Position = UDim2.new(0, 0, 1, -10) -- يبدأ من الأسفل
+    redBar.BackgroundColor3 = Color3.new(1, 0, 0) -- أحمر
+    redBar.BackgroundTransparency = 0.3
+    redBar.BorderSizePixel = 0
+    redBar.AnchorPoint = Vector2.new(0, 1) -- نقطة الربط من الأسفل
+    redBar.Parent = deathFrame
+    
+    -- النص "ستعود بعد 5 ثواني"
+    local countdownText = Instance.new("TextLabel")
+    countdownText.Name = "CountdownText"
+    countdownText.Size = UDim2.new(0.8, 0, 0.1, 0)
+    countdownText.Position = UDim2.new(0.1, 0, 0.55, 0)
+    countdownText.BackgroundTransparency = 1
+    countdownText.Text = "Respawn in 5"
+    countdownText.TextColor3 = Color3.new(1, 1, 1)
+    countdownText.TextTransparency = 1 -- تبدأ شفافة
+    countdownText.TextScaled = true
+    countdownText.Font = Enum.Font.Gotham
+    countdownText.Parent = deathFrame
+    
+    -- النص "5" كبير في المنتصف (سيتناقص)
+    local bigNumberText = Instance.new("TextLabel")
+    bigNumberText.Name = "BigNumberText"
+    bigNumberText.Size = UDim2.new(0.4, 0, 0.3, 0)
+    bigNumberText.Position = UDim2.new(0.3, 0, 0.4, 0)
+    bigNumberText.BackgroundTransparency = 1
+    bigNumberText.Text = "5"
+    bigNumberText.TextColor3 = Color3.new(1, 0.3, 0.3) -- أحمر فاتح
+    bigNumberText.TextTransparency = 1 -- تبدأ شفافة
+    bigNumberText.TextScaled = true
+    bigNumberText.Font = Enum.Font.GothamBlack
+    bigNumberText.TextStrokeColor3 = Color3.new(0, 0, 0)
+    bigNumberText.TextStrokeTransparency = 0.2
+    bigNumberText.Parent = deathFrame
+    
+    -- إضافة الشاشة إلى اللاعب
+    deathScreenGui.Parent = playerGui
+    
+    -- تشغيل صوت الموت (ID: 1837517200)
+    local deathSound = Instance.new("Sound")
+    deathSound.SoundId = "rbxassetid://1837517200"
+    deathSound.Volume = 0.7
+    deathSound.Parent = deathFrame
+    deathSound:Play()
+    
+    -- الانتظار قليلاً ثم بدء العرض
+    wait(0.5)
+    
+    -- 1. إظهار النص "لقد مت" بتدريج
+    local deathTextFadeIn = createTween(deathText, {TextTransparency = 0}, 1)
+    deathTextFadeIn:Play()
+    
+    -- 2. ظهور الشريط الأحمر من الأسفل إلى النصف
+    local barMoveUp = createTween(redBar, {Position = UDim2.new(0, 0, 0.5, 0)}, 1.5)
+    barMoveUp:Play()
+    
+    wait(1)
+    
+    -- 3. إظهار النص "ستعود بعد 5 ثواني"
+    local countdownFadeIn = createTween(countdownText, {TextTransparency = 0}, 0.8)
+    countdownFadeIn:Play()
+    
+    -- 4. إظهار الرقم الكبير
+    local numberFadeIn = createTween(bigNumberText, {TextTransparency = 0}, 0.5)
+    numberFadeIn:Play()
+    
+    -- 5. تشغيل صوت العد التنازلي (ID: 6586979979)
+    local countdownSound = Instance.new("Sound")
+    countdownSound.SoundId = "rbxassetid://6586979979"
+    countdownSound.Volume = 0.5
+    countdownSound.Parent = deathFrame
+    
+    -- دالة العد التنازلي
+    local function startCountdown()
+        for i = 5, 1, -1 do
+            bigNumberText.Text = tostring(i)
+            countdownText.Text = "Respawn in " .. tostring(i)
+            
+            -- تشغيل صوت العد التنازلي لكل رقم
+            countdownSound:Play()
+            
+            -- تأثير اهتزاز بسيط للرقم
+            local shakeTween = createTween(bigNumberText, {Position = UDim2.new(0.3, math.random(-5, 5), 0.4, math.random(-5, 5))}, 0.1)
+            shakeTween:Play()
+            
+            wait(1) -- الانتظار ثانية واحدة
+            
+            -- إعادة الرقم إلى مكانه الأصلي
+            local resetTween = createTween(bigNumberText, {Position = UDim2.new(0.3, 0, 0.4, 0)}, 0.1)
+            resetTween:Play()
+        end
+        
+        -- بعد انتهاء العد التنازلي
+        bigNumberText.Text = "0"
+        countdownText.Text = "Respawning..."
+        
+        -- اختفاء كل شيء بتدريج
+        wait(0.5)
+        
+        -- اختفاء النص "لقد مت"
+        local deathTextFadeOut = createTween(deathText, {TextTransparency = 1}, 0.8)
+        deathTextFadeOut:Play()
+        
+        -- اختفاء الرقم الكبير
+        local numberFadeOut = createTween(bigNumberText, {TextTransparency = 1}, 0.8)
+        numberFadeOut:Play()
+        
+        -- اختفاء النص "ستعود بعد..."
+        local countdownFadeOut = createTween(countdownText, {TextTransparency = 1}, 0.8)
+        countdownFadeOut:Play()
+        
+        -- تحريك الشريط الأحمر للأسفل
+        local barMoveDown = createTween(redBar, {Position = UDim2.new(0, 0, 1, -10)}, 1)
+        barMoveDown:Play()
+        
+        -- اختفاء الخلفية السوداء
+        wait(0.8)
+        local bgFadeOut = createTween(deathFrame, {BackgroundTransparency = 1}, 1.5)
+        bgFadeOut:Play()
+        
+        -- الانتظار ثم إزالة كل شيء
+        wait(2)
+        deathScreenGui:Destroy()
+    end
+    
+    -- بدء العد التنازلي
+    startCountdown()
+end
+
+-- ❗ طريقة تفعيل نظام الموت مع لعبتك:
+
+-- الطريقة 1: عند موت اللاعب (الأفضل)
+player.CharacterAdded:Connect(function(character)
+    local humanoid = character:WaitForChild("Humanoid")
+    humanoid.Died:Connect(function()
+        showDeathScreen()
+    end)
+end)
+
+-- الطريقة 2: عند سقوط اللاعب من الخريطة (إذا كان لديك نظام للجزء)
+character:WaitForChild("HumanoidRootPart").Touched:Connect(function(part)
+    if part.Name == "DeathZone" or part.Name == "Void" then
+        showDeathScreen()
+    end
+end)
+
+-- الطريقة 3: للاختبار - عند الضغط على زر 'M'
+game:GetService("UserInputService").InputBegan:Connect(function(input, gameProcessed)
+    if not gameProcessed and input.KeyCode == Enum.KeyCode.M then
+        showDeathScreen()
+    end
+end)
+
+print("✅ تم تحميل النظامين: المشهد التمهيدي + نظام الموت!")
