@@ -3,6 +3,7 @@ local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
 local SoundService = game:GetService("SoundService")
+local UserInputService = game:GetService("UserInputService")
 
 -- التأكد من أن السكريبت يعمل على جانب العميل فقط
 if not RunService:IsClient() then
@@ -13,243 +14,40 @@ end
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
--- ❗ الجزء الأول: المشهد التمهيدي (شاشة الترحيب)
+-- ❗ الجزء الأول: المشهد التمهيدي (شاشة الترحيب) 
+-- ... (الكود الأول يبقى كما هو حتى نهاية المشهد التمهيدي) ...
 
--- إنشاء الشاشة الرئيسية
-local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "IntroScreen"
-screenGui.ResetOnSpawn = false
-screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-screenGui.IgnoreGuiInset = true -- لتغطية الشاشة بالكامل
+-- ❗ الجزء الثاني: نظام الموت المحسّن
 
--- إناء الشاشة السوداء (مبدئياً شفاف)
-local blackFrame = Instance.new("Frame")
-blackFrame.Name = "BlackFrame"
-blackFrame.Size = UDim2.new(1, 0, 1, 0)
-blackFrame.Position = UDim2.new(0, 0, 0, 0)
-blackFrame.BackgroundColor3 = Color3.new(0, 0, 0)
-blackFrame.BackgroundTransparency = 1 -- تبدأ شفافة
-blackFrame.BorderSizePixel = 0
-blackFrame.Parent = screenGui
-
--- النص في المنتصف
-local centerText = Instance.new("TextLabel")
-centerText.Name = "CenterText"
-centerText.Size = UDim2.new(0.6, 0, 0.1, 0)
-centerText.Position = UDim2.new(0.2, 0, 0.45, 0)
-centerText.BackgroundTransparency = 1
-centerText.Text = "Script RS"
-centerText.TextColor3 = Color3.new(1, 1, 1)
-centerText.TextTransparency = 1 -- تبدأ شفافة
-centerText.TextScaled = true
-centerText.Font = Enum.Font.GothamBold
-centerText.Parent = blackFrame
-
--- النص على اليمين (أسفل)
-local rightText = Instance.new("TextLabel")
-rightText.Name = "RightText"
-rightText.Size = UDim2.new(0.3, 0, 0.05, 0)
-rightText.Position = UDim2.new(0.7, 0, 0.9, 0)
-rightText.AnchorPoint = Vector2.new(0.5, 0.5)
-rightText.BackgroundTransparency = 1
-rightText.Text = "عربي"
-rightText.TextColor3 = Color3.new(1, 1, 1)
-rightText.TextTransparency = 1 -- تبدأ شفافة
-rightText.TextScaled = true
-rightText.Font = Enum.Font.Gotham
-rightText.TextXAlignment = Enum.TextXAlignment.Right
-rightText.Parent = blackFrame
-
--- النص على اليسار (أسفل)
-local leftText = Instance.new("TextLabel")
-leftText.Name = "LeftText"
-leftText.Size = UDim2.new(0.3, 0, 0.05, 0)
-leftText.Position = UDim2.new(0.3, 0, 0.9, 0)
-leftText.AnchorPoint = Vector2.new(0.5, 0.5)
-leftText.BackgroundTransparency = 1
-leftText.Text = "1.0v"
-leftText.TextColor3 = Color3.new(1, 1, 1)
-leftText.TextTransparency = 1 -- تبدأ شفافة
-leftText.TextScaled = true
-leftText.Font = Enum.Font.Gotham
-leftText.TextXAlignment = Enum.TextXAlignment.Left
-leftText.Parent = blackFrame
-
--- إضافة الشاشة إلى واجهة اللاعب
-screenGui.Parent = playerGui
-
--- وظيفة للتحويلات
-local function createTween(object, properties, duration)
-	local tweenInfo = TweenInfo.new(
-		duration,
-		Enum.EasingStyle.Quad,
-		Enum.EasingDirection.InOut
-	)
-	
-	local tween = TweenService:Create(object, tweenInfo, properties)
-	return tween
-end
-
--- الانتظار قليلاً قبل البدء
-wait(0.5)
-
--- 1. ظهور الشاشة السوداء بتدريج (حبة حبة)
-local fadeInTween = createTween(blackFrame, {BackgroundTransparency = 0}, 1.5)
-fadeInTween:Play()
-
--- الانتظار حتى تكتمل الشاشة السوداء
-wait(1.5)
-
--- 2. ظهور النصوص بعد اكتمال الشاشة السوداء
-local textFadeDuration = 0.8
-
--- ظهور النص في المنتصف
-local centerTextTween = createTween(centerText, {TextTransparency = 0}, textFadeDuration)
-centerTextTween:Play()
-
--- ظهور النص على اليمين
-local rightTextTween = createTween(rightText, {TextTransparency = 0}, textFadeDuration)
-rightTextTween:Play()
-
--- ظهور النص على اليسار
-local leftTextTween = createTween(leftText, {TextTransparency = 0}, textFadeDuration)
-leftTextTween:Play()
-
--- الانتظار قليلاً بعد ظهور النصوص
-wait(2)
-
--- 3. اختفاء النصوص أولاً
-local fadeOutTextDuration = 1
-
--- اختفاء النص في المنتصف
-local centerTextOutTween = createTween(centerText, {TextTransparency = 1}, fadeOutTextDuration)
-centerTextOutTween:Play()
-
--- اختفاء النص على اليمين
-local rightTextOutTween = createTween(rightText, {TextTransparency = 1}, fadeOutTextDuration)
-rightTextOutTween:Play()
-
--- اختفاء النص على اليسار
-local leftTextOutTween = createTween(leftText, {TextTransparency = 1}, fadeOutTextDuration)
-leftTextOutTween:Play()
-
--- الانتظار حتى تختفي النصوص
-wait(fadeOutTextDuration)
-
--- 4. اختفاء الشاشة السوداء
-local fadeOutTween = createTween(blackFrame, {BackgroundTransparency = 1}, 1.5)
-fadeOutTween:Play()
-
--- الانتظار حتى تختفي الشاشة
-wait(1.5)
-
--- 5. عرض الشاشة الثانية (مرحبا بك)
-local secondBlackFrame = Instance.new("Frame")
-secondBlackFrame.Name = "SecondBlackFrame"
-secondBlackFrame.Size = UDim2.new(1, 0, 1, 0)
-secondBlackFrame.Position = UDim2.new(0, 0, 0, 0)
-secondBlackFrame.BackgroundColor3 = Color3.new(0, 0, 0)
-secondBlackFrame.BackgroundTransparency = 1 -- تبدأ شفافة
-secondBlackFrame.BorderSizePixel = 0
-secondBlackFrame.Parent = screenGui
-
--- النص الترحيبي
-local welcomeText = Instance.new("TextLabel")
-welcomeText.Name = "WelcomeText"
-welcomeText.Size = UDim2.new(0.8, 0, 0.15, 0)
-welcomeText.Position = UDim2.new(0.1, 0, 0.4, 0)
-welcomeText.BackgroundTransparency = 1
-welcomeText.Text = "مرحبا بك في سكريبت RS 👋"
-welcomeText.TextColor3 = Color3.new(1, 1, 1)
-welcomeText.TextTransparency = 1 -- تبدأ شفافة
-welcomeText.TextScaled = true
-welcomeText.Font = Enum.Font.GothamBold
-welcomeText.Parent = secondBlackFrame
-
--- رابط الديسكورد
-local discordLink = Instance.new("TextLabel")
-discordLink.Name = "DiscordLink"
-discordLink.Size = UDim2.new(0.9, 0, 0.1, 0)
-discordLink.Position = UDim2.new(0.05, 0, 0.6, 0)
-discordLink.BackgroundTransparency = 1
-discordLink.Text = "https://discord.gg/NCmesk7RbX"
-discordLink.TextColor3 = Color3.new(0, 0.6, 1)
-discordLink.TextTransparency = 1 -- تبدأ شفافة
-discordLink.TextScaled = true
-discordLink.Font = Enum.Font.Gotham
-discordLink.Parent = secondBlackFrame
-
--- 6. ظهور الشاشة الثانية بتدريج
-wait(0.3)
-
--- ظهور الخلفية السوداء للشاشة الثانية
-local secondFadeIn = createTween(secondBlackFrame, {BackgroundTransparency = 0}, 1)
-secondFadeIn:Play()
-
-wait(1)
-
--- ظهور النص الترحيبي
-local welcomeFadeIn = createTween(welcomeText, {TextTransparency = 0}, 0.8)
-welcomeFadeIn:Play()
-
-wait(0.8)
-
--- ظهور رابط الديسكورد
-local discordFadeIn = createTween(discordLink, {TextTransparency = 0}, 0.8)
-discordFadeIn:Play()
-
--- نسخ الرابط تلقائياً
-wait(1)
-
-if setclipboard then
-	setclipboard("https://discord.gg/NCmesk7RbX")
-	
-	-- إضافة رسالة تأكيد
-	local copyMessage = Instance.new("TextLabel")
-	copyMessage.Name = "CopyMessage"
-	copyMessage.Size = UDim2.new(0.8, 0, 0.08, 0)
-	copyMessage.Position = UDim2.new(0.1, 0, 0.7, 0)
-	copyMessage.BackgroundTransparency = 1
-	copyMessage.Text = "تم النسخ إلى الحافظة!"
-	copyMessage.TextColor3 = Color3.new(0, 1, 0)
-	copyMessage.TextTransparency = 1
-	copyMessage.TextScaled = true
-	copyMessage.Font = Enum.Font.Gotham
-	copyMessage.Parent = secondBlackFrame
-	
-	local copyFadeIn = createTween(copyMessage, {TextTransparency = 0}, 0.5)
-	copyFadeIn:Play()
-end
-
--- الانتظار قليلاً ثم اختفاء كل شيء
-wait(3)
-
--- اختفاء النصوص أولاً
-local textFadeOut = createTween(welcomeText, {TextTransparency = 1}, 1)
-textFadeOut:Play()
-
-local discordFadeOut = createTween(discordLink, {TextTransparency = 1}, 1)
-discordFadeOut:Play()
-
-wait(1)
-
--- اختفاء الخلفية السوداء
-local secondFadeOut = createTween(secondBlackFrame, {BackgroundTransparency = 1}, 1.5)
-secondFadeOut:Play()
-
-wait(2)
-
--- إزالة كل شيء
-screenGui:Destroy()
-
-print("اكتمل العرض التمهيدي!")
-
--- ❗ الجزء الثاني: نظام الموت (يعمل بعد انتهاء المشهد التمهيدي)
+-- متغيرات التحكم
+local isPlayerDead = false
+local deathScreenGui = nil
 
 -- وظيفة إظهار شاشة الموت
 local function showDeathScreen()
-    -- إنشاء شاشة الموت
-    local deathScreenGui = Instance.new("ScreenGui")
+    if isPlayerDead then return end
+    isPlayerDead = true
+    
+    -- إخفاء الشخصية بشكل كامل بشاشة سوداء
+    local fullBlackScreen = Instance.new("ScreenGui")
+    fullBlackScreen.Name = "FullBlackScreen"
+    fullBlackScreen.ResetOnSpawn = false
+    fullBlackScreen.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    fullBlackScreen.IgnoreGuiInset = true
+    
+    local blackOverlay = Instance.new("Frame")
+    blackOverlay.Name = "BlackOverlay"
+    blackOverlay.Size = UDim2.new(1, 0, 1, 0)
+    blackOverlay.Position = UDim2.new(0, 0, 0, 0)
+    blackOverlay.BackgroundColor3 = Color3.new(0, 0, 0)
+    blackOverlay.BackgroundTransparency = 1 -- تبدأ شفافة
+    blackOverlay.BorderSizePixel = 0
+    blackOverlay.Parent = fullBlackScreen
+    
+    fullBlackScreen.Parent = playerGui
+    
+    -- إنشاء شاشة الموت (الرسومات)
+    deathScreenGui = Instance.new("ScreenGui")
     deathScreenGui.Name = "DeathScreen"
     deathScreenGui.ResetOnSpawn = false
     deathScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
@@ -261,7 +59,7 @@ local function showDeathScreen()
     deathFrame.Size = UDim2.new(1, 0, 1, 0)
     deathFrame.Position = UDim2.new(0, 0, 0, 0)
     deathFrame.BackgroundColor3 = Color3.new(0, 0, 0)
-    deathFrame.BackgroundTransparency = 0.7 -- شفافة قليلاً
+    deathFrame.BackgroundTransparency = 0.8 -- أكثر شفافية
     deathFrame.BorderSizePixel = 0
     deathFrame.Parent = deathScreenGui
     
@@ -304,14 +102,14 @@ local function showDeathScreen()
     countdownText.Font = Enum.Font.Gotham
     countdownText.Parent = deathFrame
     
-    -- النص "5" كبير في المنتصف (سيتناقص)
+    -- النص "5" كبير في المنتصف
     local bigNumberText = Instance.new("TextLabel")
     bigNumberText.Name = "BigNumberText"
     bigNumberText.Size = UDim2.new(0.4, 0, 0.3, 0)
     bigNumberText.Position = UDim2.new(0.3, 0, 0.4, 0)
     bigNumberText.BackgroundTransparency = 1
     bigNumberText.Text = "5"
-    bigNumberText.TextColor3 = Color3.new(1, 0.3, 0.3) -- أحمر فاتح
+    bigNumberText.TextColor3 = Color3.new(1, 0.3, 0.3)
     bigNumberText.TextTransparency = 1 -- تبدأ شفافة
     bigNumberText.TextScaled = true
     bigNumberText.Font = Enum.Font.GothamBlack
@@ -322,35 +120,38 @@ local function showDeathScreen()
     -- إضافة الشاشة إلى اللاعب
     deathScreenGui.Parent = playerGui
     
-    -- تشغيل صوت الموت (ID: 1837517200)
+    -- 1. ظهور الشاشة السوداء الكاملة (لإخفاء الشخصية)
+    local overlayFadeIn = createTween(blackOverlay, {BackgroundTransparency = 0}, 0.8)
+    overlayFadeIn:Play()
+    
+    wait(0.5)
+    
+    -- 2. تشغيل صوت الموت
     local deathSound = Instance.new("Sound")
     deathSound.SoundId = "rbxassetid://1837517200"
     deathSound.Volume = 0.7
     deathSound.Parent = deathFrame
     deathSound:Play()
     
-    -- الانتظار قليلاً ثم بدء العرض
-    wait(0.5)
-    
-    -- 1. إظهار النص "لقد مت" بتدريج
+    -- 3. إظهار النص "لقد مت"
     local deathTextFadeIn = createTween(deathText, {TextTransparency = 0}, 1)
     deathTextFadeIn:Play()
     
-    -- 2. ظهور الشريط الأحمر من الأسفل إلى النصف
+    -- 4. ظهور الشريط الأحمر من الأسفل إلى النصف
     local barMoveUp = createTween(redBar, {Position = UDim2.new(0, 0, 0.5, 0)}, 1.5)
     barMoveUp:Play()
     
     wait(1)
     
-    -- 3. إظهار النص "ستعود بعد 5 ثواني"
+    -- 5. إظهار النص "ستعود بعد 5 ثواني"
     local countdownFadeIn = createTween(countdownText, {TextTransparency = 0}, 0.8)
     countdownFadeIn:Play()
     
-    -- 4. إظهار الرقم الكبير
+    -- 6. إظهار الرقم الكبير
     local numberFadeIn = createTween(bigNumberText, {TextTransparency = 0}, 0.5)
     numberFadeIn:Play()
     
-    -- 5. تشغيل صوت العد التنازلي (ID: 6586979979)
+    -- 7. تشغيل صوت العد التنازلي
     local countdownSound = Instance.new("Sound")
     countdownSound.SoundId = "rbxassetid://6586979979"
     countdownSound.Volume = 0.5
@@ -365,14 +166,18 @@ local function showDeathScreen()
             -- تشغيل صوت العد التنازلي لكل رقم
             countdownSound:Play()
             
-            -- تأثير اهتزاز بسيط للرقم
-            local shakeTween = createTween(bigNumberText, {Position = UDim2.new(0.3, math.random(-5, 5), 0.4, math.random(-5, 5))}, 0.1)
+            -- تأثير اهتزاز بسيط
+            local shakeTween = createTween(bigNumberText, {
+                Position = UDim2.new(0.3, math.random(-5, 5), 0.4, math.random(-5, 5))
+            }, 0.1)
             shakeTween:Play()
             
-            wait(1) -- الانتظار ثانية واحدة
+            wait(1)
             
-            -- إعادة الرقم إلى مكانه الأصلي
-            local resetTween = createTween(bigNumberText, {Position = UDim2.new(0.3, 0, 0.4, 0)}, 0.1)
+            -- إعادة الرقم لمكانه
+            local resetTween = createTween(bigNumberText, {
+                Position = UDim2.new(0.3, 0, 0.4, 0)
+            }, 0.1)
             resetTween:Play()
         end
         
@@ -380,40 +185,60 @@ local function showDeathScreen()
         bigNumberText.Text = "0"
         countdownText.Text = "Respawning..."
         
-        -- اختفاء كل شيء بتدريج
+        -- الانتظار قليلاً قبل إعادة اللاعب
         wait(0.5)
         
-        -- اختفاء النص "لقد مت"
+        -- ❗ إعادة اللاعب إلى الحياة (هنا ضع كود إعادة إحياء اللاعب)
+        -- إذا كان لديك نظام إعادة إحياء، ضعه هنا
+        
+        -- 8. بدء الاختفاء التدريجي
         local deathTextFadeOut = createTween(deathText, {TextTransparency = 1}, 0.8)
         deathTextFadeOut:Play()
         
-        -- اختفاء الرقم الكبير
         local numberFadeOut = createTween(bigNumberText, {TextTransparency = 1}, 0.8)
         numberFadeOut:Play()
         
-        -- اختفاء النص "ستعود بعد..."
         local countdownFadeOut = createTween(countdownText, {TextTransparency = 1}, 0.8)
         countdownFadeOut:Play()
         
         -- تحريك الشريط الأحمر للأسفل
-        local barMoveDown = createTween(redBar, {Position = UDim2.new(0, 0, 1, -10)}, 1)
+        local barMoveDown = createTween(redBar, {
+            Position = UDim2.new(0, 0, 1, -10)
+        }, 1)
         barMoveDown:Play()
         
-        -- اختفاء الخلفية السوداء
         wait(0.8)
-        local bgFadeOut = createTween(deathFrame, {BackgroundTransparency = 1}, 1.5)
+        
+        -- 9. إزالة شاشة الموت
+        local bgFadeOut = createTween(deathFrame, {BackgroundTransparency = 1}, 1)
         bgFadeOut:Play()
         
-        -- الانتظار ثم إزالة كل شيء
+        -- 10. إزالة الشاشة السوداء الكاملة تدريجياً (للعودة للوضع الطبيعي)
+        local overlayFadeOut = createTween(blackOverlay, {BackgroundTransparency = 1}, 1.5)
+        overlayFadeOut:Play()
+        
         wait(2)
+        
+        -- 11. تنظيف كل شيء
         deathScreenGui:Destroy()
+        fullBlackScreen:Destroy()
+        isPlayerDead = false
     end
     
     -- بدء العد التنازلي
     startCountdown()
 end
 
--- ❗ طريقة تفعيل نظام الموت مع لعبتك:
+-- ❗ نظام منع الإدخال أثناء الموت
+local function blockInputDuringDeath()
+    -- منع الحركة أثناء الموت
+    if isPlayerDead then
+        -- يمكنك إضافة كود لمنع تحريك الكاميرا أو الشخصية هنا
+        -- مثال: UserInputService.MouseIconEnabled = false
+    end
+end
+
+-- ❗ طرق تفعيل نظام الموت
 
 -- الطريقة 1: عند موت اللاعب (الأفضل)
 player.CharacterAdded:Connect(function(character)
@@ -421,20 +246,44 @@ player.CharacterAdded:Connect(function(character)
     humanoid.Died:Connect(function()
         showDeathScreen()
     end)
+    
+    -- لمنع الموت السريع المتكرر
+    humanoid.StateChanged:Connect(function(oldState, newState)
+        if newState == Enum.HumanoidStateType.Dead then
+            -- يمكنك إضافة كود إضافي هنا
+        end
+    end)
 end)
 
--- الطريقة 2: عند سقوط اللاعب من الخريطة (إذا كان لديك نظام للجزء)
-character:WaitForChild("HumanoidRootPart").Touched:Connect(function(part)
-    if part.Name == "DeathZone" or part.Name == "Void" then
-        showDeathScreen()
+-- الطريقة 2: عند سقوط اللاعب من الخريطة
+game.Workspace:WaitForChild(player.Name).HumanoidRootPart.Touched:Connect(function(part)
+    if part.Name == "DeathZone" or part.Name == "Void" or part.Position.Y < -50 then
+        if not isPlayerDead then
+            showDeathScreen()
+        end
     end
 end)
 
 -- الطريقة 3: للاختبار - عند الضغط على زر 'M'
-game:GetService("UserInputService").InputBegan:Connect(function(input, gameProcessed)
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
     if not gameProcessed and input.KeyCode == Enum.KeyCode.M then
-        showDeathScreen()
+        if not isPlayerDead then
+            showDeathScreen()
+        end
     end
 end)
 
-print("✅ تم تحميل النظامين: المشهد التمهيدي + نظام الموت!")
+-- ❗ وظيفة إعادة إحياء اللاعب (ضيف كودك هنا)
+local function respawnPlayer()
+    -- إذا كان لديك نظام إعادة إحياء، ضعه هنا
+    -- مثال: player:LoadCharacter()
+    
+    -- أو استخدم النظام الافتراضي
+    if player.Character then
+        player.Character:BreakJoints()
+    end
+    wait(1)
+    player:LoadCharacter()
+end
+
+print("✅ تم تحميل نظام الموت المحسّن!")
